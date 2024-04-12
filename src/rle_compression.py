@@ -1,5 +1,6 @@
 from data_compression import DataCompression
 from typing import Union
+from utility import print_progress_bar, timer, Logger
 
 
 class RleCompression(DataCompression):
@@ -17,11 +18,19 @@ class RleCompression(DataCompression):
             if data[i:i+bytes_size] == data[i+bytes_size:i+2*bytes_size]:
                 count += 1
             else:
-                encoded_data.append(f'{count}{data[i:i+bytes_size]}')
+                if count > 1:
+                    encoded_data.append(f'{count}{data[i:i+bytes_size]}')
+                else: 
+                    encoded_data.append(data[i:i+bytes_size])
                 count = 1
 
             if i == len(data):
-                encoded_data.append(f'{count}{data[i:i+bytes_size]}')
+                if count > 1:
+                    encoded_data.append(f'{count}{data[i:i+bytes_size]}')
+                else: 
+                    encoded_data.append(data[i:i+bytes_size])
+
+            print_progress_bar(iteration=i+1, total=len(data))
 
 
         return "".join(encoded_data)
@@ -40,8 +49,13 @@ class RleCompression(DataCompression):
                 count += str(compressed_data[i])
                 i += 1
 
+            if not count:
+                count = '1'
+
+            # i += 1
             decoded_data.append(int(count) * compressed_data[i:i+bytes_size])
             i += bytes_size
             count = ''
+            print_progress_bar(iteration=i+1, total=len(compressed_data))
 
         return "".join(decoded_data)

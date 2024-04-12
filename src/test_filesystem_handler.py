@@ -1,7 +1,7 @@
 import os
 import shutil
 import pytest
-from rle_compression import RleCompression
+from rle_compression_binary import RleCompression
 from filesystem_handler import Filesystem_Handler
 
 

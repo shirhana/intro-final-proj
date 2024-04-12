@@ -1,2 +1,2 @@
-* RLE algorithem cant handle numbers as data.... 
-* compress files with non bytes or strings data... (imagess....)
+* extract to specific location
+* support compressing of a empty folder
