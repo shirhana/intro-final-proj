@@ -191,8 +191,10 @@ def get_decompress_string():
 
 
 def create_cefd_banner(action_type: str):
-    
-  banner = get_compress_string()
+  if action_type == 'decompress':
+     banner = get_decompress_string()
+  else:
+    banner = get_compress_string()
 
   reset = "\033[0m"
   res = ''

@@ -7,10 +7,9 @@ BYTES_LENGTH = 16
 
 class Filesystem_Handler:
 
-    def __init__(self, data_compression_algorithem: DataCompression, bytes_size) -> None:
+    def __init__(self, data_compression_algorithem: DataCompression) -> None:
         self._compress_func = data_compression_algorithem.compress_data
         self._decompress_func = data_compression_algorithem.decompress_data
-        self._bytes_size = bytes_size
         self._output_file = None
 
     def open_output_file(self, output_file_path: str) -> None:
@@ -31,7 +30,7 @@ class Filesystem_Handler:
             f.write(data)
 
     def compress_data_to_file(self, data: str):
-        compressed_data = self._compress_func(data=data, bytes_size=self._bytes_size)
+        compressed_data = self._compress_func(data=data)
         self._output_file.write(len(compressed_data).to_bytes(BYTES_LENGTH, byteorder='big'))
         # self._output_file.write(compressed_data.encode('utf-8'))
         self._output_file.write(compressed_data)
@@ -40,7 +39,7 @@ class Filesystem_Handler:
         compressed_len = int.from_bytes(compressed_data[index:index+BYTES_LENGTH][::-1], byteorder='little')
         next_index = BYTES_LENGTH + index + compressed_len
         compressed = compressed_data[index+BYTES_LENGTH:next_index]
-        decompress_data = self._decompress_func(compressed_data=compressed, bytes_size=self._bytes_size)
+        decompress_data = self._decompress_func(compressed_data=compressed)
 
         return decompress_data, next_index
 
@@ -118,3 +117,35 @@ class Filesystem_Handler:
     def decompress_files(self, directories: list, view_mode: bool = False):
         for compressed_file in directories:
             self.decompress(compressed_file_path=compressed_file, view_mode=view_mode)
+
+    def remove_from_archive(self, input_paths: list, archive_path:str):
+        count_files_removes = 0
+        update_compressed_data = bytearray()
+        compressed_data = self.read_file(
+            file=archive_path
+        )
+
+        i = 0
+        while i < len(compressed_data):
+            
+            # get full file path from compressed data
+            file_path, next_index = self.get_decompressed_data(
+                compressed_data=compressed_data,
+                index=i
+            )
+            
+            # get original file data from compressed data
+            file_data, next_index = self.get_decompressed_data(
+                compressed_data=compressed_data, 
+                index=next_index
+            )
+            
+            if file_path.decode().startswith(tuple(input_paths)):
+                count_files_removes += 1
+            else:
+                update_compressed_data.extend(compressed_data[i:next_index])
+            
+            i = next_index
+        
+        self.write_file(file=archive_path, data=bytes(update_compressed_data))
+        return count_files_removes

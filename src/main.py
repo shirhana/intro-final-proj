@@ -62,7 +62,7 @@ def compression_info(original_paths, output_path: str = "", elapsed_time: float 
 
 
 def run(
-        input_paths: list, output_path: str, action_type: str = 'compress') -> None:
+        input_paths: list, output_path: str, action_type: str = 'compress', bytes_size: int = 2) -> None:
     """compress a single file.
 
     Args:
@@ -71,8 +71,8 @@ def run(
     """
     validate_args(output_path=output_path, action_type=action_type)
     # TODO - create ENUM for action types
-    rle_algorithem = RleCompression()
-    handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem, bytes_size=1)
+    rle_algorithem = RleCompression(bytes_size=bytes_size)
+    handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem)
 
     if action_type == 'compress':
         if os.path.isfile(output_path):
@@ -94,7 +94,18 @@ def run(
         
     elif action_type == 'add-to-archive':
         compress_to_file(handler=handler, input_paths=input_paths, output_path=output_path, action_type=action_type)
-        
+
+    elif action_type == 'remove-from-archive':
+         # Record the start time
+        start_time = time.time()
+        files_removed = handler.remove_from_archive(input_paths=input_paths, archive_path=output_path)
+        print(f'{files_removed} files were removed from {output_path} archive file.')
+        # Calculate the elapsed time
+        finish_time = time.time()
+        elapsed_time = float(finish_time - start_time)
+        compression_info(original_paths=input_paths, output_path=output_path, elapsed_time=elapsed_time, action_type=action_type)
+
+
     elif action_type == 'view-archive':
         handler.decompress_files(directories=input_paths, view_mode=True)
 
@@ -128,9 +139,17 @@ if "__main__" == __name__:
     parser.add_argument(
         '--action_type', 
         metavar='action_type',
-        choices=['compress', 'decompress', 'add-to-archive', 'view-archive'], 
+        choices=['compress', 'decompress', 'add-to-archive', 'remove-from-archive', 'view-archive'], 
         help='Choose one option of action type from the list',
         required=True
+    )
+
+    parser.add_argument(
+        '--bytes_size', 
+        metavar='bytes_size',
+        type=int,
+        default=2,
+        help='Choose bytes size of your compression',
     )
 
     # Parse the command-line arguments
@@ -140,7 +159,7 @@ if "__main__" == __name__:
     run(
         input_paths=args.input_paths_list, 
         output_path=args.output_path, 
-        action_type=args.action_type
+        action_type=args.action_type,
+        bytes_size=args.bytes_size
     )
     
-    # compress_or_extract_file(input_file=argument_input_path, output_file=argument_output_path, action_type=argument_action_type)
