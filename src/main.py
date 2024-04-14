@@ -1,7 +1,7 @@
 import os
 import argparse
-from utility import create_cefd_banner
-from rle_compression_binary import RleCompression
+from utility import create_cefd_banner, timer
+from rle_compression import RleCompression
 from filesystem_handler import Filesystem_Handler
 from display_action_info import DisplayActionInfo
 from action_types import ActionTypes
