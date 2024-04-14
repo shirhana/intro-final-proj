@@ -1,6 +1,4 @@
 from data_compression import DataCompression
-from typing import Union
-from utility import print_progress_bar, timer, Logger
 
 
 class RleCompression(DataCompression):
