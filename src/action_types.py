@@ -8,3 +8,4 @@ class ActionTypes(Enum):
     UPDATE_ARCHIVE = 'update-archive'
     REMOVE_FROM_ARCHIVE = 'remove-from-archive'
     VIEW_ARCHIVE = 'view-archive'
+    CHECK_VALIDATION = 'is-valid-archive'

@@ -21,6 +21,7 @@ def run(
     handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem)
 
     display_info = DisplayActionInfo(action_type=action_type, input_paths=input_paths, output_path=output_path)
+    result = ''
 
     if action_type == ActionTypes.COMPRESS.value:
         if os.path.isfile(output_path):
@@ -34,11 +35,8 @@ def run(
         handler.decompress_files(directories=input_paths, init=True)
         
     elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
-         # Record the start time
-        files_removed = handler.remove_from_archive(input_paths=input_paths, archive_path=output_path)
-        print(f'{files_removed} files were removed from {output_path} archive file.')
-        # Calculate the elapsed time
-        
+        result = handler.remove_from_archive(input_paths=input_paths, archive_path=output_path)
+                
     elif action_type == ActionTypes.UPDATE_ARCHIVE.value or action_type == ActionTypes.ADD_TO_ARCHIVE.value:
         handler.open_output_file(output_file_path=output_path)
         handler.update_archive(input_paths=input_paths, archive_path=output_path)
@@ -47,7 +45,10 @@ def run(
     elif action_type == ActionTypes.VIEW_ARCHIVE.value:
         handler.decompress_files(directories=input_paths, view_mode=True, init=True)
 
-    display_info.show()
+    elif action_type == ActionTypes.CHECK_VALIDATION.value:
+        result = handler.check_validation(archive_paths=input_paths)
+
+    display_info.show(result)
 
 
 def validate_args(output_path: str, action_type: str):

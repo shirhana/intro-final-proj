@@ -53,6 +53,9 @@ class Filesystem_Handler:
         if algorithem_type.startswith(CompressionTypes.RLE.value.__name__.encode()):
             bytes_size = int.from_bytes(algorithem_type[3:][::-1], byteorder='little')
             self.set_compression_algorithem(compression_algorithem=CompressionTypes.RLE.value(bytes_size=bytes_size))
+        
+        else:
+            raise Exception(f'{algorithem_type} is not a valid algorithem type!')
 
     def compress(self, directories: list, subfolder: str = '', ignore_folders: list = [], ignore_files: list = [], ignore_extensions: list = [], init_compression: bool = False):
         if init_compression:
@@ -90,7 +93,7 @@ class Filesystem_Handler:
                 pass #TODO: what should happen?
 
 
-    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False, init_decompression: bool = False):
+    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False, debug_mode: bool = False, init_decompression: bool = False):
 
         # TODO - check differenes between strings and bytes
 
@@ -103,7 +106,7 @@ class Filesystem_Handler:
                     file=compressed_file_path
                 )
 
-                if view_mode:
+                if view_mode and not debug_mode:
                     print(f"{compressed_file_path} compressed file contains:")
                 
             else: 
@@ -111,11 +114,11 @@ class Filesystem_Handler:
             
         if init_decompression:
             # get full file path from compressed data
-                algorithen_type, next_index = self.get_decompressed_data(
+                algorithem_type, next_index = self.get_decompressed_data(
                     compressed_data=compressed_data
                 )
 
-                self.define_compression_algorithem(algorithem_type=algorithen_type)
+                self.define_compression_algorithem(algorithem_type=algorithem_type)
 
         else:
             next_index = 0
@@ -133,16 +136,17 @@ class Filesystem_Handler:
         )
 
         # TODO - check if supposed to be written inside of a folder
-        if view_mode:
+        if view_mode and not debug_mode:
             print(f'{file_path.decode()} - size [{len(file_data)}]')
-        else:
+        elif not debug_mode:
             self.write_file(file=file_path, data=file_data)
         # decompress the original data recursivlly from the 
         # rest of the compressed data
         self.decompress(
             compressed_data=compressed_data[next_index:], 
             subfolder=subfolder,
-            view_mode=view_mode
+            view_mode=view_mode,
+            debug_mode=debug_mode
         )
 
     def decompress_files(self, directories: list, view_mode: bool = False, init: bool = False):
@@ -156,7 +160,15 @@ class Filesystem_Handler:
             file=archive_path
         )
 
-        i = 0
+        # get full file path from compressed data
+        algorithem_type, next_index = self.get_decompressed_data(
+            compressed_data=compressed_data
+        )
+
+        self.define_compression_algorithem(algorithem_type=algorithem_type)
+        update_compressed_data.extend(compressed_data[0:next_index])
+        
+        i = next_index
         while i < len(compressed_data):
             
             # get full file path from compressed data
@@ -181,9 +193,20 @@ class Filesystem_Handler:
         self.write_file(file=archive_path, data=bytes(update_compressed_data))
         return count_files_removes
     
-
     def update_archive(self, input_paths: list, archive_path:str):
         self.remove_from_archive(input_paths=input_paths, archive_path=archive_path)
         self.compress(directories=input_paths)
+
+    def check_validation(self, archive_paths: str):
+        non_valid_archive_paths = []
+        for archive_path in archive_paths:
+            try:
+                self.decompress(compressed_file_path=archive_path, debug_mode=True, init_decompression=True)
+            except Exception as e:
+                non_valid_archive_paths.append(archive_path)
+            
+        return non_valid_archive_paths
+            
+
         
         
