@@ -1,68 +1,15 @@
 import os
-import sys
 import argparse
-import time
-from utility import print_colored, Colors, get_compression_ratio, create_cefd_banner
+from utility import create_cefd_banner
 from rle_compression_binary import RleCompression
 from filesystem_handler import Filesystem_Handler
-
-
-def compress_to_file(handler, input_paths, output_path, action_type):
-    # Record the start time
-    start_time = time.time()
-    handler.open_output_file(output_file_path=output_path)
-    handler.compress(directories=input_paths)
-    handler.close_output_file()
-
-    # Calculate the elapsed time
-    finish_time = time.time()
-    elapsed_time = float(finish_time - start_time)
-
-    compression_info(original_paths=input_paths, output_path=output_path, elapsed_time=elapsed_time, action_type=action_type)
-
-def get_folder_size(path):
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(path):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
-    return total_size
-
-
-def display_elapsed_time(action_type: str, elapsed_time: float = 0.0):
-    clrs = Colors()
-    time_str = f"{elapsed_time} seconds"
-    print(f'Time of {action_type}  -->{print_colored(text=time_str,  color=clrs.purple)}')
-
-
-def compression_info(original_paths, output_path: str = "", elapsed_time: float = 0.0, action_type: str = 'compress'):
-    total_size = 0
-    for path in original_paths:
-        if os.path.isdir(path):
-            total_size += get_folder_size(path=path)
-        elif os.path.isfile(path):
-            total_size += int(os.path.getsize(path))
-
-    clrs = Colors()
-    print(
-        f"Compressed Size: {print_colored(text=os.path.getsize(output_path),  color=clrs.yellow)} bytes"
-    )
-    if action_type == 'compress':
-        print(f'Delta Size --> {print_colored(int(total_size - os.path.getsize(output_path)), color=clrs.cyan)}')
-        ratio = int(total_size/os.path.getsize(output_path))
-        ratio_color = print_colored(text=f"{ratio}%",  color=clrs.green)
-        print(
-            f"Compressed Ratio: {ratio_color}"
-        )
-
-    if action_type == 'add-to-archive':
-        print(f'Added Files Size --> {print_colored(total_size, color=clrs.cyan)}')
-
-    display_elapsed_time(action_type=action_type, elapsed_time=elapsed_time)
+from display_action_info import DisplayActionInfo
+from action_types import ActionTypes
 
 
 def run(
-        input_paths: list, output_path: str, action_type: str = 'compress', bytes_size: int = 2) -> None:
+        input_paths: list, output_path: str, action_type: str, bytes_size: int = 2, ignore_files: list = [],
+        ignore_folders: list = [], ignore_extensions: list = []) -> None:
     """compress a single file.
 
     Args:
@@ -70,44 +17,37 @@ def run(
         output_file str: writes all output to this file.
     """
     validate_args(output_path=output_path, action_type=action_type)
-    # TODO - create ENUM for action types
     rle_algorithem = RleCompression(bytes_size=bytes_size)
     handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem)
 
-    if action_type == 'compress':
+    display_info = DisplayActionInfo(action_type=action_type, input_paths=input_paths, output_path=output_path)
+
+    if action_type == ActionTypes.COMPRESS.value:
         if os.path.isfile(output_path):
             os.remove(output_path)
 
-        compress_to_file(handler=handler, input_paths=input_paths, output_path=output_path, action_type=action_type)
+        handler.open_output_file(output_file_path=output_path)
+        handler.compress(directories=input_paths, ignore_folders=ignore_folders, ignore_extensions=ignore_extensions, ignore_files=ignore_files)
+        handler.close_output_file()
          
-        
-    elif action_type == 'decompress':
-        # Record the start time
-        start_time = time.time()
+    elif action_type == ActionTypes.DECOMPRESS.value:
         handler.decompress_files(directories=input_paths)
-
-        # Calculate the elapsed time
-        finish_time = time.time()
-        elapsed_time = float(finish_time - start_time)
-
-        display_elapsed_time(action_type=action_type, elapsed_time=elapsed_time)
         
-    elif action_type == 'add-to-archive':
-        compress_to_file(handler=handler, input_paths=input_paths, output_path=output_path, action_type=action_type)
-
-    elif action_type == 'remove-from-archive':
+    elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
          # Record the start time
-        start_time = time.time()
         files_removed = handler.remove_from_archive(input_paths=input_paths, archive_path=output_path)
         print(f'{files_removed} files were removed from {output_path} archive file.')
         # Calculate the elapsed time
-        finish_time = time.time()
-        elapsed_time = float(finish_time - start_time)
-        compression_info(original_paths=input_paths, output_path=output_path, elapsed_time=elapsed_time, action_type=action_type)
+        
+    elif action_type == ActionTypes.UPDATE_ARCHIVE.value or action_type == ActionTypes.ADD_TO_ARCHIVE.value:
+        handler.open_output_file(output_file_path=output_path)
+        handler.update_archive(input_paths=input_paths, archive_path=output_path)
+        handler.close_output_file()
 
-
-    elif action_type == 'view-archive':
+    elif action_type == ActionTypes.VIEW_ARCHIVE.value:
         handler.decompress_files(directories=input_paths, view_mode=True)
+
+    display_info.show()
 
 
 def validate_args(output_path: str, action_type: str):
@@ -139,7 +79,7 @@ if "__main__" == __name__:
     parser.add_argument(
         '--action_type', 
         metavar='action_type',
-        choices=['compress', 'decompress', 'add-to-archive', 'remove-from-archive', 'view-archive'], 
+        choices=[member.value.lower() for member in ActionTypes], 
         help='Choose one option of action type from the list',
         required=True
     )
@@ -152,14 +92,46 @@ if "__main__" == __name__:
         help='Choose bytes size of your compression',
     )
 
+    parser.add_argument(
+        '--ignore_files', 
+        metavar='ignore_files', 
+        type=str, 
+        nargs='+',
+        help='list of files that will be ignored while compression',
+        required=False,
+        default=[]
+    )
+
+    parser.add_argument(
+        '--ignore_folders', 
+        metavar='ignore_folders', 
+        type=str, 
+        nargs='+',
+        help='list of folders that will be ignored while compression',
+        required=False,
+        default=[]
+    )
+
+    parser.add_argument(
+        '--ignore_extensions', 
+        metavar='ignore_extensions', 
+        type=str, 
+        nargs='+',
+        help='list of files extensions that will be ignored while compression',
+        required=False,
+        default=[]
+    )
+
     # Parse the command-line arguments
     args = parser.parse_args()
     print(create_cefd_banner(action_type=args.action_type))
-
     run(
         input_paths=args.input_paths_list, 
         output_path=args.output_path, 
         action_type=args.action_type,
-        bytes_size=args.bytes_size
+        bytes_size=args.bytes_size,
+        ignore_files=args.ignore_files,
+        ignore_folders=args.ignore_folders,
+        ignore_extensions=args.ignore_extensions
     )
     

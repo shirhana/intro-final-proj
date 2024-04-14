@@ -43,30 +43,34 @@ class Filesystem_Handler:
 
         return decompress_data, next_index
 
-    def compress(self, directories: list, subfolder: str = ''):
+    def compress(self, directories: list, subfolder: str = '', ignore_folders: list = [], ignore_files: list = [], ignore_extensions: list = []):
+        ignore_folders = [os.path.normpath(path) for path in ignore_folders]
         # pass on each given directory
         for dir in directories:
             full_dir_path = os.path.join(subfolder, dir)
             # if it is directory to folder
             if os.path.isdir(full_dir_path):
-                files_in_folder = os.listdir(full_dir_path)
+                
+                if os.path.normpath(full_dir_path) not in ignore_folders:
+                    files_in_folder = os.listdir(full_dir_path)
 
-                # compress recursive the files which inside the directory to current folder
-                self.compress(directories=files_in_folder, subfolder=full_dir_path) 
+                    # compress recursive the files which inside the directory to current folder
+                    self.compress(directories=files_in_folder, subfolder=full_dir_path, ignore_files=ignore_files, ignore_extensions=ignore_extensions, ignore_folders=ignore_folders) 
 
             
             # if it is directory to file
             elif os.path.isfile(full_dir_path):
-                
-                # compress full file path name
-                self.compress_data_to_file(data=full_dir_path.encode())
+            
+                if full_dir_path not in ignore_files and not full_dir_path.endswith(tuple(ignore_extensions)):
+                    # compress full file path name
+                    self.compress_data_to_file(data=full_dir_path.encode())
 
-                # read data from current file
-                full_file_data = self.read_file(file=full_dir_path)
-                # print(f'full_file_data: {full_file_data}')
-                
-                # compress file data
-                self.compress_data_to_file(data=full_file_data)
+                    # read data from current file
+                    full_file_data = self.read_file(file=full_dir_path)
+                    # print(f'full_file_data: {full_file_data}')
+                    
+                    # compress file data
+                    self.compress_data_to_file(data=full_file_data)
 
             else:
                 pass #TODO: what should happen?
@@ -149,3 +153,10 @@ class Filesystem_Handler:
         
         self.write_file(file=archive_path, data=bytes(update_compressed_data))
         return count_files_removes
+    
+
+    def update_archive(self, input_paths: list, archive_path:str):
+        self.remove_from_archive(input_paths=input_paths, archive_path=archive_path)
+        self.compress(directories=input_paths)
+        
+        
