@@ -22,6 +22,7 @@ def run(
 
     display_info = DisplayActionInfo(action_type=action_type, input_paths=input_paths, output_path=output_path)
     result = ''
+    valid = True
 
     if action_type == ActionTypes.COMPRESS.value:
         if os.path.isfile(output_path):
@@ -32,10 +33,16 @@ def run(
         handler.close_output_file()
          
     elif action_type == ActionTypes.DECOMPRESS.value:
-        handler.decompress_files(directories=input_paths, init=True)
+        error_msg = handler.check_validation(archive_paths=input_paths)
+        valid = display_info.alert(error_msg)
+        if valid:
+            handler.decompress_files(directories=input_paths, init=True)
         
     elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
-        result = handler.remove_from_archive(input_paths=input_paths, archive_path=output_path)
+        error_msg = handler.check_validation(archive_paths=[output_path])
+        valid = display_info.alert(error_msg)
+        if valid:
+            result = handler.remove_from_archive(input_paths=input_paths, archive_path=output_path)
                 
     elif action_type == ActionTypes.UPDATE_ARCHIVE.value or action_type == ActionTypes.ADD_TO_ARCHIVE.value:
         handler.open_output_file(output_file_path=output_path)
@@ -43,12 +50,17 @@ def run(
         handler.close_output_file()
 
     elif action_type == ActionTypes.VIEW_ARCHIVE.value:
-        handler.decompress_files(directories=input_paths, view_mode=True, init=True)
+        error_msg = handler.check_validation(archive_paths=input_paths)
+        valid = display_info.alert(error_msg)
+        if valid:
+            handler.decompress_files(directories=input_paths, view_mode=True, init=True)
 
     elif action_type == ActionTypes.CHECK_VALIDATION.value:
         result = handler.check_validation(archive_paths=input_paths)
+        display_info.alert(result)
 
-    display_info.show(result)
+    if valid:
+        display_info.show(result=result)
 
 
 def validate_args(output_path: str, action_type: str):

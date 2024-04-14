@@ -2,6 +2,7 @@ import os
 from data_compression import DataCompression
 from compression_types import CompressionTypes
 from typing import Union
+from exceptions import NotValidCompressionAlgorithem
 
 
 BYTES_LENGTH = 16
@@ -55,7 +56,7 @@ class Filesystem_Handler:
             self.set_compression_algorithem(compression_algorithem=CompressionTypes.RLE.value(bytes_size=bytes_size))
         
         else:
-            raise Exception(f'{algorithem_type} is not a valid algorithem type!')
+            raise NotValidCompressionAlgorithem(f'Invalid compression format!')
 
     def compress(self, directories: list, subfolder: str = '', ignore_folders: list = [], ignore_files: list = [], ignore_extensions: list = [], init_compression: bool = False):
         if init_compression:
@@ -105,7 +106,6 @@ class Filesystem_Handler:
                 compressed_data = self.read_file(
                     file=compressed_file_path
                 )
-
                 if view_mode and not debug_mode:
                     print(f"{compressed_file_path} compressed file contains:")
                 
@@ -167,7 +167,7 @@ class Filesystem_Handler:
 
         self.define_compression_algorithem(algorithem_type=algorithem_type)
         update_compressed_data.extend(compressed_data[0:next_index])
-        
+
         i = next_index
         while i < len(compressed_data):
             
@@ -198,12 +198,13 @@ class Filesystem_Handler:
         self.compress(directories=input_paths)
 
     def check_validation(self, archive_paths: str):
-        non_valid_archive_paths = []
+        non_valid_archive_paths = {}
         for archive_path in archive_paths:
             try:
                 self.decompress(compressed_file_path=archive_path, debug_mode=True, init_decompression=True)
+            
             except Exception as e:
-                non_valid_archive_paths.append(archive_path)
+                non_valid_archive_paths[archive_path] = f'raise {type(e).__name__}({e})'
             
         return non_valid_archive_paths
             

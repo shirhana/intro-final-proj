@@ -1,0 +1,2 @@
+class NotValidCompressionAlgorithem(Exception):
+    pass
