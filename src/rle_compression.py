@@ -37,3 +37,10 @@ class RleCompression(DataCompression):
             decompressed_data.extend(bytes_value * count)
             i += self._bytes_size
         return bytes(decompressed_data)
+    
+    def get_metadata(self):
+        metadata = bytearray()
+        metadata.extend(self.__class__.__name__.encode())
+        metadata.append(self._bytes_size)
+
+        return bytes(metadata)

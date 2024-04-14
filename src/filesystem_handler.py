@@ -1,5 +1,6 @@
 import os
 from data_compression import DataCompression
+from compression_types import CompressionTypes
 from typing import Union
 
 
@@ -8,9 +9,13 @@ BYTES_LENGTH = 16
 class Filesystem_Handler:
 
     def __init__(self, data_compression_algorithem: DataCompression) -> None:
-        self._compress_func = data_compression_algorithem.compress_data
-        self._decompress_func = data_compression_algorithem.decompress_data
+        self._compression_algorithem = None
         self._output_file = None
+
+        self.set_compression_algorithem(compression_algorithem=data_compression_algorithem)
+
+    def set_compression_algorithem(self, compression_algorithem: DataCompression):
+        self._compression_algorithem = compression_algorithem
 
     def open_output_file(self, output_file_path: str) -> None:
         self._output_file = open(output_file_path, 'ab')
@@ -30,7 +35,7 @@ class Filesystem_Handler:
             f.write(data)
 
     def compress_data_to_file(self, data: str):
-        compressed_data = self._compress_func(data=data)
+        compressed_data = self._compression_algorithem.compress_data(data=data)
         self._output_file.write(len(compressed_data).to_bytes(BYTES_LENGTH, byteorder='big'))
         # self._output_file.write(compressed_data.encode('utf-8'))
         self._output_file.write(compressed_data)
@@ -39,11 +44,20 @@ class Filesystem_Handler:
         compressed_len = int.from_bytes(compressed_data[index:index+BYTES_LENGTH][::-1], byteorder='little')
         next_index = BYTES_LENGTH + index + compressed_len
         compressed = compressed_data[index+BYTES_LENGTH:next_index]
-        decompress_data = self._decompress_func(compressed_data=compressed)
+        decompress_data = self._compression_algorithem.decompress_data(compressed_data=compressed)
 
         return decompress_data, next_index
+    
+    def define_compression_algorithem(self, algorithem_type: bytes):
+        # RLE algorithem
+        if algorithem_type.startswith(CompressionTypes.RLE.value.__name__.encode()):
+            bytes_size = int.from_bytes(algorithem_type[3:][::-1], byteorder='little')
+            self.set_compression_algorithem(compression_algorithem=CompressionTypes.RLE.value(bytes_size=bytes_size))
 
-    def compress(self, directories: list, subfolder: str = '', ignore_folders: list = [], ignore_files: list = [], ignore_extensions: list = []):
+    def compress(self, directories: list, subfolder: str = '', ignore_folders: list = [], ignore_files: list = [], ignore_extensions: list = [], init_compression: bool = False):
+        if init_compression:
+            self.compress_data_to_file(data=self._compression_algorithem.get_metadata())
+
         ignore_folders = [os.path.normpath(path) for path in ignore_folders]
         # pass on each given directory
         for dir in directories:
@@ -76,7 +90,8 @@ class Filesystem_Handler:
                 pass #TODO: what should happen?
 
 
-    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False):
+    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False, init_decompression: bool = False):
+
         # TODO - check differenes between strings and bytes
 
         # if compressed_data is empty
@@ -93,10 +108,22 @@ class Filesystem_Handler:
                 
             else: 
                 return # TODO - think of another way
+            
+        if init_decompression:
+            # get full file path from compressed data
+                algorithen_type, next_index = self.get_decompressed_data(
+                    compressed_data=compressed_data
+                )
+
+                self.define_compression_algorithem(algorithem_type=algorithen_type)
+
+        else:
+            next_index = 0
 
         # get full file path from compressed data
         file_path, next_index = self.get_decompressed_data(
-            compressed_data=compressed_data
+            compressed_data=compressed_data,
+            index=next_index
         )
         
         # get original file data from compressed data
@@ -118,9 +145,9 @@ class Filesystem_Handler:
             view_mode=view_mode
         )
 
-    def decompress_files(self, directories: list, view_mode: bool = False):
+    def decompress_files(self, directories: list, view_mode: bool = False, init: bool = False):
         for compressed_file in directories:
-            self.decompress(compressed_file_path=compressed_file, view_mode=view_mode)
+            self.decompress(compressed_file_path=compressed_file, view_mode=view_mode, init_decompression=init)
 
     def remove_from_archive(self, input_paths: list, archive_path:str):
         count_files_removes = 0

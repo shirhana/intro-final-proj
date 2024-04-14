@@ -27,11 +27,11 @@ def run(
             os.remove(output_path)
 
         handler.open_output_file(output_file_path=output_path)
-        handler.compress(directories=input_paths, ignore_folders=ignore_folders, ignore_extensions=ignore_extensions, ignore_files=ignore_files)
+        handler.compress(directories=input_paths, ignore_folders=ignore_folders, ignore_extensions=ignore_extensions, ignore_files=ignore_files, init_compression=True)
         handler.close_output_file()
          
     elif action_type == ActionTypes.DECOMPRESS.value:
-        handler.decompress_files(directories=input_paths)
+        handler.decompress_files(directories=input_paths, init=True)
         
     elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
          # Record the start time
@@ -45,7 +45,7 @@ def run(
         handler.close_output_file()
 
     elif action_type == ActionTypes.VIEW_ARCHIVE.value:
-        handler.decompress_files(directories=input_paths, view_mode=True)
+        handler.decompress_files(directories=input_paths, view_mode=True, init=True)
 
     display_info.show()
 
