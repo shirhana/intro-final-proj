@@ -1,14 +1,16 @@
 import os
 import argparse
-from utility import create_cefd_banner, timer
+from utility import create_cefd_banner
+from huffman_compression import HuffmanCompression
 from rle_compression import RleCompression
 from filesystem_handler import Filesystem_Handler
 from display_action_info import DisplayActionInfo
 from action_types import ActionTypes
+from compression_types import CompressionTypes
 
 
 def run(
-        input_paths: list, output_path: str, action_type: str, bytes_size: int = 2, ignore_files: list = [],
+        input_paths: list, output_path: str, action_type: str, compression_type: str = 'rle', bytes_size: int = 2, ignore_files: list = [],
         ignore_folders: list = [], ignore_extensions: list = []) -> None:
     """compress a single file.
 
@@ -17,8 +19,14 @@ def run(
         output_file str: writes all output to this file.
     """
     validate_args(output_path=output_path, action_type=action_type)
-    rle_algorithem = RleCompression(bytes_size=bytes_size)
-    handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem)
+    
+    if compression_type == CompressionTypes.RLE.name.lower():
+        compression_algorithem = CompressionTypes.RLE.value(bytes_size=bytes_size)
+    elif compression_type == CompressionTypes.HUFFMAN.name.lower():
+        compression_algorithem = CompressionTypes.HUFFMAN.value()
+    else:
+        raise Exception(f"no good")
+    handler = Filesystem_Handler(data_compression_algorithem=compression_algorithem)
 
     display_info = DisplayActionInfo(action_type=action_type, input_paths=input_paths, output_path=output_path)
     result = ''
@@ -60,7 +68,7 @@ def run(
         display_info.alert(result)
 
     if valid:
-        display_info.show(result=result)
+        display_info.show(result=result, compression_algorithem=handler.get_compression_algorithem_name())
 
 
 def validate_args(output_path: str, action_type: str):
@@ -87,6 +95,15 @@ if "__main__" == __name__:
         default='',
         type=str, 
         help='path to output file'
+    )
+
+    parser.add_argument(
+        '--compression_type', 
+        metavar='compression_type',
+        choices=[member.name.lower() for member in CompressionTypes], 
+        help='Choose your wanted algorithem for compression',
+        required=False,
+        default="rle"
     )
 
     parser.add_argument(
@@ -142,9 +159,10 @@ if "__main__" == __name__:
         input_paths=args.input_paths_list, 
         output_path=args.output_path, 
         action_type=args.action_type,
+        compression_type=args.compression_type,
         bytes_size=args.bytes_size,
         ignore_files=args.ignore_files,
         ignore_folders=args.ignore_folders,
-        ignore_extensions=args.ignore_extensions
+        ignore_extensions=args.ignore_extensions,
     )
     

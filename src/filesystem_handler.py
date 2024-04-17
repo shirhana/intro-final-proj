@@ -15,6 +15,9 @@ class Filesystem_Handler:
 
         self.set_compression_algorithem(compression_algorithem=data_compression_algorithem)
 
+    def get_compression_algorithem_name(self) -> str:
+        return self._compression_algorithem.__class__.__name__
+
     def set_compression_algorithem(self, compression_algorithem: DataCompression):
         self._compression_algorithem = compression_algorithem
 
@@ -54,13 +57,29 @@ class Filesystem_Handler:
         if algorithem_type.startswith(CompressionTypes.RLE.value.__name__.encode()):
             bytes_size = int.from_bytes(algorithem_type[3:][::-1], byteorder='little')
             self.set_compression_algorithem(compression_algorithem=CompressionTypes.RLE.value(bytes_size=bytes_size))
+
+        elif algorithem_type.startswith(CompressionTypes.HUFFMAN.value.__name__.encode()):
+            self.set_compression_algorithem(compression_algorithem=CompressionTypes.HUFFMAN.value())
         
         else:
             raise NotValidCompressionAlgorithem(f'Invalid compression format!')
+        
+    def write_metadata(self):
+        compress_algorithem_metadata = self._compression_algorithem.get_metadata()
+        self._output_file.write(len(compress_algorithem_metadata).to_bytes(BYTES_LENGTH, byteorder='big'))
+        # self._output_file.write(compressed_data.encode('utf-8'))
+        self._output_file.write(compress_algorithem_metadata)
+
+    def read_metadata(self, compressed_data: str, index: int = 0):
+        metadata_len = int.from_bytes(compressed_data[index:index+BYTES_LENGTH][::-1], byteorder='little')
+        next_index = BYTES_LENGTH + index + metadata_len
+        metadata = compressed_data[index+BYTES_LENGTH:next_index]
+
+        return metadata, next_index
 
     def compress(self, directories: list, subfolder: str = '', ignore_folders: list = [], ignore_files: list = [], ignore_extensions: list = [], init_compression: bool = False):
         if init_compression:
-            self.compress_data_to_file(data=self._compression_algorithem.get_metadata())
+            self.write_metadata()
 
         ignore_folders = [os.path.normpath(path) for path in ignore_folders]
         # pass on each given directory
@@ -85,7 +104,6 @@ class Filesystem_Handler:
 
                     # read data from current file
                     full_file_data = self.read_file(file=full_dir_path)
-                    # print(f'full_file_data: {full_file_data}')
                     
                     # compress file data
                     self.compress_data_to_file(data=full_file_data)
@@ -114,12 +132,8 @@ class Filesystem_Handler:
             
         if init_decompression:
             # get full file path from compressed data
-                algorithem_type, next_index = self.get_decompressed_data(
-                    compressed_data=compressed_data
-                )
-
+                algorithem_type, next_index = self.read_metadata(compressed_data=compressed_data)
                 self.define_compression_algorithem(algorithem_type=algorithem_type)
-
         else:
             next_index = 0
 

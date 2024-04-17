@@ -1,3 +1,3 @@
 * extract to specific location
 * support compressing of a empty folder
-* get bytes size metadata in decompress
+* right now - compress a file that does not exist does not fail....

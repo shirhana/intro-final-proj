@@ -45,18 +45,22 @@ class DisplayActionInfo():
         time_str = f"{self._elapsed_time} seconds"
         print(f'Time of {self._action_type}  -->{print_colored(text=time_str,  color=clrs.purple)}')
 
-    def show(self, result: str):
+    def show(self, result: str, compression_algorithem: str):
         self.stop_clock()
         input_paths_size = self.get_total_size_of_directories(directories=self._input_paths)
         success = True
 
         if self._action_type == ActionTypes.COMPRESS.value:
+            print(print_colored(f'Compress With {compression_algorithem} Algorithem Info:', color=self._clrs.cyan))
             outpath_size = self.get_total_size_of_directories(directories=[self._output_path])
             print(f"Compressed Size: {print_colored(text=outpath_size,  color=self._clrs.yellow)} bytes")
             print(f'Delta Size --> {print_colored(int(input_paths_size - outpath_size), color=self._clrs.cyan)}')
             ratio = int(input_paths_size/outpath_size)
             ratio_color = print_colored(text=f"{ratio}%",  color=self._clrs.green)
             print(f"Compressed Ratio: {ratio_color}")
+
+        elif self._action_type == ActionTypes.DECOMPRESS.value:
+            print(print_colored(f'Deompress With {compression_algorithem} Algorithem Info:', color=self._clrs.cyan))
 
         elif self._action_type == ActionTypes.ADD_TO_ARCHIVE.value:
             print(f'Added Files Size --> {print_colored(input_paths_size, color=self._clrs.cyan)}')
