@@ -3,6 +3,7 @@ import argparse
 from utility import create_cefd_banner
 from huffman_compression import HuffmanCompression
 from rle_compression import RleCompression
+from lempel_ziv_compression import LempelZivCompression
 from filesystem_handler import Filesystem_Handler
 from display_action_info import DisplayActionInfo
 from action_types import ActionTypes
@@ -26,6 +27,8 @@ def run(
         compression_algorithem = CompressionTypes.HUFFMAN.value()
     else:
         raise Exception(f"no good")
+    
+    compression_algorithem = LempelZivCompression()
     handler = Filesystem_Handler(data_compression_algorithem=compression_algorithem)
 
     display_info = DisplayActionInfo(action_type=action_type, input_paths=input_paths, output_path=output_path)

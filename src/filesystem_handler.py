@@ -60,6 +60,9 @@ class Filesystem_Handler:
 
         elif algorithem_type.startswith(CompressionTypes.HUFFMAN.value.__name__.encode()):
             self.set_compression_algorithem(compression_algorithem=CompressionTypes.HUFFMAN.value())
+
+        elif algorithem_type.startswith(CompressionTypes.LZ.value.__name__.encode()):
+            self.set_compression_algorithem(compression_algorithem=CompressionTypes.LZ.value())
         
         else:
             raise NotValidCompressionAlgorithem(f'Invalid compression format!')
