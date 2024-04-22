@@ -145,7 +145,7 @@ class Filesystem_Handler:
             compressed_data=compressed_data,
             index=next_index
         )
-        
+
         # get original file data from compressed data
         file_data, next_index = self.get_decompressed_data(
             compressed_data=compressed_data, 

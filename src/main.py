@@ -25,10 +25,11 @@ def run(
         compression_algorithem = CompressionTypes.RLE.value(bytes_size=bytes_size)
     elif compression_type == CompressionTypes.HUFFMAN.name.lower():
         compression_algorithem = CompressionTypes.HUFFMAN.value()
+    elif compression_type == CompressionTypes.LZ.name.lower():
+        compression_algorithem = CompressionTypes.LZ.value()
     else:
         raise Exception(f"no good")
     
-    compression_algorithem = LempelZivCompression()
     handler = Filesystem_Handler(data_compression_algorithem=compression_algorithem)
 
     display_info = DisplayActionInfo(action_type=action_type, input_paths=input_paths, output_path=output_path)
