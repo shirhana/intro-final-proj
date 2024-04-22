@@ -10,7 +10,7 @@ from src.rle_compression import *
     (b"ABCSDDDDDD", 2,  b'ABCS*^&\x03DD')
 
 ])
-def test_rle_compress(bytes_input, bytes_size, result):
+def test_compress(bytes_input, bytes_size, result):
     data_compression = RleCompression(bytes_size=bytes_size)
     assert result == data_compression.compress_data(data=bytes_input)
 
@@ -21,6 +21,6 @@ def test_rle_compress(bytes_input, bytes_size, result):
     (b'ABCS*^&\x06D', 1, b"ABCSDDDDDD"),
     (b'ABCS*^&\x03DD', 2, b"ABCSDDDDDD")
 ])
-def test_rle_extract(compressed_data, bytes_size, result):
+def test_decompress(compressed_data, bytes_size, result):
     data_compression = RleCompression(bytes_size=bytes_size)
     assert result == data_compression.decompress_data(compressed_data=compressed_data)

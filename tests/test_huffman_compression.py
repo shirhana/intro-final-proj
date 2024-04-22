@@ -9,7 +9,7 @@ from src.huffman_compression import *
     (b"12", b'\x12{"0": 49, "1": 50}\x06@'),
     (b"",  b'\x02{}\x08\x00')
 ])
-def test_rle_compress(bytes_input, result):
+def test_compress(bytes_input, result):
     data_compression = HuffmanCompression()
     print(data_compression.compress_data(data=bytes_input))
     assert result == data_compression.compress_data(data=bytes_input)
@@ -22,6 +22,6 @@ def test_rle_compress(bytes_input, result):
     (b"12", b'\x12{"0": 49, "1": 50}\x06@'),
     (b"",  b'\x02{}\x08\x00')
 ])
-def test_rle_extract(result, compressed_data):
+def test_decompress(result, compressed_data):
     data_compression = HuffmanCompression()
     assert result == data_compression.decompress_data(compressed_data=compressed_data)

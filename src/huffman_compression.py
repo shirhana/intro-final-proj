@@ -6,10 +6,11 @@ from data_compression import DataCompression
 class HuffmanCompression(DataCompression):
 
     def __init__(self):
+        super().__init__()
         self._heap = []
         self._codes = {}
         self._reverse_mapping = {}
-        self._unique_sign = b'*^&'
+        # self._bigger_than_256_sign = b'*^&'
 
     class HeapNode:
         def __init__(self, char, freq):
@@ -125,7 +126,7 @@ class HuffmanCompression(DataCompression):
         if huffman_table_len >= 256:
             a = huffman_table_len // 256
             b = huffman_table_len % 256
-            compress_data.extend(self._unique_sign)
+            compress_data.extend(self._bigger_than_256_sign)
             compress_data.extend(a.to_bytes(1, byteorder='big'))
             compress_data.extend(b.to_bytes(1, byteorder='big'))
         else:
@@ -161,7 +162,7 @@ class HuffmanCompression(DataCompression):
         return bytes(b)
 
     def decompress_data(self, compressed_data):
-        if compressed_data[0] == self._unique_sign[0] and compressed_data[1] == self._unique_sign[1] and compressed_data[2] == self._unique_sign[2]:
+        if compressed_data[0] == self._bigger_than_256_sign[0] and compressed_data[1] == self._bigger_than_256_sign[1] and compressed_data[2] == self._bigger_than_256_sign[2]:
             start_index = 5
             huffman_table_len = 256 * compressed_data[3] + compressed_data[4] + 4
         else:
