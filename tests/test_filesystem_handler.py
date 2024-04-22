@@ -1,8 +1,8 @@
 import os
 import shutil
 import pytest
-from rle_compression import RleCompression
-from filesystem_handler import Filesystem_Handler
+from src.rle_compression import RleCompression
+from src.filesystem_handler import Filesystem_Handler
 
 
 def create_file(file_path, data):

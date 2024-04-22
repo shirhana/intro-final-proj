@@ -1,5 +1,5 @@
 import pytest
-from rle_compression import *
+from src.rle_compression import *
 
 
 

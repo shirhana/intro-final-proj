@@ -6,26 +6,27 @@ from data_compression import DataCompression
 class HuffmanCompression(DataCompression):
 
     def __init__(self):
-        self.heap = []
-        self.codes = {}
-        self.reverse_mapping = {}
+        self._heap = []
+        self._codes = {}
+        self._reverse_mapping = {}
+        self._unique_sign = b'*^&'
 
     class HeapNode:
         def __init__(self, char, freq):
-            self.char = char
-            self.freq = freq
-            self.left = None
-            self.right = None
+            self._char = char
+            self._freq = freq
+            self._left = None
+            self._right = None
 
         def __lt__(self, other):
-            return self.freq < other.freq
+            return self._freq < other._freq
 
         def __eq__(self, other):
             if(other == None):
                 return False
             if(not isinstance(other, self.HeapNode)):
                 return False
-            return self.freq == other.freq
+            return self._freq == other._freq
 
     def make_frequency_dict(self, text):
         frequency = {}
@@ -38,40 +39,53 @@ class HuffmanCompression(DataCompression):
     def make_heap(self, frequency):
         for key in frequency:
             node = self.HeapNode(key, frequency[key])
-            heapq.heappush(self.heap, node)
+            heapq.heappush(self._heap, node)
 
     def merge_nodes(self):
-        while(len(self.heap) > 1):
-            node1 = heapq.heappop(self.heap)
-            node2 = heapq.heappop(self.heap)
+        if len(self._heap) == 1:
+            node1 = heapq.heappop(self._heap)
+            merged = self.HeapNode(None, node1._freq)
+            merged._left = node1
 
-            merged = self.HeapNode(None, node1.freq + node2.freq)
-            merged.left = node1
-            merged.right = node2
+            heapq.heappush(self._heap, merged)
 
-            heapq.heappush(self.heap, merged)
+        while(len(self._heap) > 1):
+            node1 = heapq.heappop(self._heap)
+            node2 = heapq.heappop(self._heap)
+
+            merged = self.HeapNode(None, node1._freq + node2._freq)
+            merged._left = node1
+            merged._right = node2
+
+            heapq.heappush(self._heap, merged)
 
     def make_codes_helper(self, root, current_code):
+        print(f'here!!\nroot {root}\nroot char: {root._char}')
+        print(f'current_code: {current_code}')
         if(root == None):
             return
 
-        if(root.char is not None):
-            self.codes[root.char] = current_code
-            self.reverse_mapping[current_code] = root.char
+        if(root._char is not None):
+            self._codes[root._char] = current_code
+            self._reverse_mapping[current_code] = root._char
             return
 
-        self.make_codes_helper(root.left, current_code + "0")
-        self.make_codes_helper(root.right, current_code + "1")
+        self.make_codes_helper(root._left, current_code + "0")
+        if root._right is not None:
+            self.make_codes_helper(root._right, current_code + "1")
 
     def make_codes(self):
-        root = heapq.heappop(self.heap)
-        current_code = ""
-        self.make_codes_helper(root, current_code)
+        try:
+            root = heapq.heappop(self._heap)
+            current_code = ""
+            self.make_codes_helper(root, current_code)
+        except IndexError:
+            pass
 
     def get_encoded_text(self, text):
         encoded_text = ""
         for character in text:
-            encoded_text += self.codes[character]
+            encoded_text += self._codes[character]
         return encoded_text
 
     def pad_encoded_text(self, encoded_text):
@@ -95,7 +109,7 @@ class HuffmanCompression(DataCompression):
         return b
 
     def compress_data(self, data):
-        self.reverse_mapping = {}
+        self._reverse_mapping = {}
         data = data.rstrip()
         frequency = self.make_frequency_dict(data)
         self.make_heap(frequency)
@@ -107,16 +121,16 @@ class HuffmanCompression(DataCompression):
 
         byte_array = self.get_byte_array(padded_encoded_text)
         compress_data = bytearray()
-        huffman_table_len = len(json.dumps(self.reverse_mapping).encode())
+        huffman_table_len = len(json.dumps(self._reverse_mapping).encode())
         if huffman_table_len >= 256:
             a = huffman_table_len // 256
             b = huffman_table_len % 256
-            compress_data.extend(b'*^&')
+            compress_data.extend(self._unique_sign)
             compress_data.extend(a.to_bytes(1, byteorder='big'))
             compress_data.extend(b.to_bytes(1, byteorder='big'))
         else:
             compress_data.append(huffman_table_len)
-        compress_data.extend(json.dumps(self.reverse_mapping).encode())
+        compress_data.extend(json.dumps(self._reverse_mapping).encode())
         compress_data.extend(bytes(byte_array))
 
         return bytes(compress_data)
@@ -135,19 +149,19 @@ class HuffmanCompression(DataCompression):
         b = bytearray()
 
         if huffman_table:
-            self.reverse_mapping = huffman_table
+            self._reverse_mapping = huffman_table
 
         for bit in encoded_text:
             current_code += bit
-            if(current_code in self.reverse_mapping):
-                character = self.reverse_mapping[current_code]
+            if(current_code in self._reverse_mapping):
+                character = self._reverse_mapping[current_code]
                 b.extend(character.to_bytes(byteorder='little'))
                 current_code = ""
 
         return bytes(b)
 
     def decompress_data(self, compressed_data):
-        if compressed_data[0] == 42 and compressed_data[1] == 94 and compressed_data[2] == 38:
+        if compressed_data[0] == self._unique_sign[0] and compressed_data[1] == self._unique_sign[1] and compressed_data[2] == self._unique_sign[2]:
             start_index = 5
             huffman_table_len = 256 * compressed_data[3] + compressed_data[4] + 4
         else:
