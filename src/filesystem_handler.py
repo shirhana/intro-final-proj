@@ -114,36 +114,32 @@ class Filesystem_Handler:
             else:
                 pass #TODO: what should happen?
 
+    def should_stop(self, compressed_file_path: str = '', compressed_data: bytes = b''):
+        # if compressed_data is empty and compressed file path was not inserted
+        if compressed_data == b'' and not compressed_file_path:
+            return True
+        return False
+    
+    def should_read_compressed_file(self, compressed_file_path: str = '', compressed_data: bytes = b''):
+        # if compressed_data is empty and compressed file path was inserted
+        if compressed_data == b'' and compressed_file_path:
+            return True
+        return False
+    
+    def handle_init_decompression(self, compressed_data, view_mode=False, debug_mode=False, compressed_file_path: str = ''):
+        # get full file path from compressed data
+        algorithem_type, next_index = self.read_metadata(compressed_data=compressed_data)
+        self.define_compression_algorithem(algorithem_type=algorithem_type)
+        if view_mode and not debug_mode:
+            print(f"{compressed_file_path} - [{self.get_compression_algorithem_name()}] compressed file contains:")
 
-    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False, debug_mode: bool = False, init_decompression: bool = False):
-
-        # TODO - check differenes between strings and bytes
-
-        # if compressed_data is empty
-        if compressed_data == b'':
-            # if compressed file path was inserted ->
-            #  read compressed_data from file path
-            if compressed_file_path:
-                compressed_data = self.read_file(
-                    file=compressed_file_path
-                )
-                
-            else: 
-                return # TODO - think of another way
-            
-        if init_decompression:
-            # get full file path from compressed data
-                algorithem_type, next_index = self.read_metadata(compressed_data=compressed_data)
-                self.define_compression_algorithem(algorithem_type=algorithem_type)
-                if view_mode and not debug_mode:
-                    print(f"{compressed_file_path} - [{self.get_compression_algorithem_name()}] compressed file contains:")
-        else:
-            next_index = 0
-
+        return next_index
+    
+    def get_next_file_from_archive(self, compressed_data, view_mode=False, debug_mode=True, index=0, get_file_path=False):
         # get full file path from compressed data
         file_path, next_index = self.get_decompressed_data(
             compressed_data=compressed_data,
-            index=next_index
+            index=index
         )
 
         # get original file data from compressed data
@@ -152,11 +148,32 @@ class Filesystem_Handler:
             index=next_index
         )
 
-        # TODO - check if supposed to be written inside of a folder
         if view_mode and not debug_mode:
             print(f'{file_path.decode()} - size [{len(file_data)}]')
         elif not debug_mode:
             self.write_file(file=file_path, data=file_data)
+
+        if get_file_path:
+            return next_index, file_path
+        else:
+            return next_index
+
+    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False, debug_mode: bool = False, init_decompression: bool = False):
+        if self.should_stop(compressed_file_path=compressed_file_path, compressed_data=compressed_data):
+            return
+        
+        if self.should_read_compressed_file(
+            compressed_file_path=compressed_file_path, compressed_data=compressed_data
+        ):
+            compressed_data = self.read_file(file=compressed_file_path)
+            
+        if init_decompression:
+            next_index = self.handle_init_decompression(compressed_data=compressed_data, view_mode=view_mode, debug_mode=debug_mode, compressed_file_path=compressed_file_path)
+        else:
+            next_index = 0
+
+        next_index = self.get_next_file_from_archive(compressed_data=compressed_data, view_mode=view_mode, debug_mode=debug_mode, index=next_index)
+
         # decompress the original data recursivlly from the 
         # rest of the compressed data
         self.decompress(
@@ -177,29 +194,13 @@ class Filesystem_Handler:
             file=archive_path
         )
 
-        # get full file path from compressed data
-        algorithem_type, next_index = self.get_decompressed_data(
-            compressed_data=compressed_data
-        )
-
-        self.define_compression_algorithem(algorithem_type=algorithem_type)
+        next_index = self.handle_init_decompression(compressed_data=compressed_data)
         update_compressed_data.extend(compressed_data[0:next_index])
 
         i = next_index
         while i < len(compressed_data):
             
-            # get full file path from compressed data
-            file_path, next_index = self.get_decompressed_data(
-                compressed_data=compressed_data,
-                index=i
-            )
-            
-            # get original file data from compressed data
-            file_data, next_index = self.get_decompressed_data(
-                compressed_data=compressed_data, 
-                index=next_index
-            )
-            
+            next_index, file_path = self.get_next_file_from_archive(compressed_data=compressed_data, get_file_path=True, index=next_index)
             if file_path.decode().startswith(tuple(input_paths)):
                 count_files_removes += 1
             else:

@@ -1,0 +1,143 @@
+import shutil
+from src.main import *
+from src.action_types import ActionTypes
+from src.compression_types import CompressionTypes
+import os
+import pytest
+
+FOLDER_NAME = 'test-folder'
+FILE_NAME = 'file'
+
+def make_dirs(folders_num=2, files_num=4, size=10):
+    folders_lst = []
+    for j in range(folders_num):
+        folder_name = f'{FOLDER_NAME}-{j}'
+        folders_lst.append(folder_name)
+        data = b"1"*size
+
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+        for i in range(files_num):
+            file_name = f"{FILE_NAME}{i}"
+            with open(os.path.join(folder_name, file_name), 'wb') as f:
+                f.write(data)
+
+    return folders_lst
+
+
+def clean(paths):
+    for path in paths:
+        if os.path.isdir(path):
+            shutil.rmtree(path)
+        elif os.path.isfile(path):
+            os.remove(path)
+
+
+def test_compression_decompression():
+    input_paths = make_dirs()
+    paths = []
+    for member in CompressionTypes:
+        compression_type = member.name.lower()
+        output_path = f"output-{member.name}.bin"
+        paths.append(output_path)
+
+        # COMPRESS
+        assert not os.path.isfile(output_path)
+        run(input_paths=input_paths, output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
+        assert os.path.isfile(output_path)
+
+    # DECOMPRESS
+    run(input_paths=paths, output_path='', action_type=ActionTypes.DECOMPRESS.value)
+
+    # VIEW-ARCHIVE
+    run(input_paths=paths, output_path='', action_type=ActionTypes.VIEW_ARCHIVE.value)
+
+    paths.extend(input_paths)
+
+    clean(paths=paths)
+
+def test_remove_from_archive():
+    files_num = 5
+    folders_num = 1
+    folder_name = f"{FOLDER_NAME}-{folders_num-1}"
+    file_name = f"{FILE_NAME}1"
+    
+    paths = []
+    for member in CompressionTypes:
+        input_paths = make_dirs(folders_num=folders_num, files_num=files_num)
+        compression_type = member.name.lower()
+        output_path = f"output-{member.name}.bin"
+        paths.append(output_path)
+
+        assert len(os.listdir(folder_name)) == files_num
+        assert file_name in os.listdir(folder_name)
+
+        # COMPRESS
+        run(input_paths=input_paths, output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
+
+        clean(input_paths)
+
+        # REMOVE NON EXIST FILE FROM ARCHIVE
+        run(input_paths=['stam'], output_path=output_path, action_type=ActionTypes.REMOVE_FROM_ARCHIVE.value, compression_type=compression_type)
+
+        # DECOMPRESS
+        run(input_paths=[output_path], output_path='', action_type=ActionTypes.DECOMPRESS.value, compression_type=compression_type)
+        assert len(os.listdir(folder_name)) == files_num
+        assert file_name in os.listdir(folder_name)
+
+        clean(input_paths)
+
+        # REMOVE_FROM_ARCHIVE
+        run(input_paths=[os.path.join(folder_name, file_name)], output_path=output_path, action_type=ActionTypes.REMOVE_FROM_ARCHIVE.value, compression_type=compression_type)
+        # DECOMPRESS
+        run(input_paths=[output_path], output_path='', action_type=ActionTypes.DECOMPRESS.value, compression_type=compression_type)
+        
+
+        assert len(os.listdir(folder_name)) == files_num - 1
+        assert file_name not in os.listdir(folder_name)
+
+        paths.extend(input_paths)
+
+        clean(paths)
+
+
+def test_add_to_archive():
+    files_num = 5
+    folders_num = 1
+    folder_name = f"{FOLDER_NAME}-{folders_num-1}"
+    new_file_name = f"new_file_name"
+
+    
+    
+    paths = []
+    for member in CompressionTypes:
+        input_paths = make_dirs(folders_num=folders_num, files_num=files_num)
+        compression_type = member.name.lower()
+        output_path = f"output-{member.name}.bin"
+        paths.append(output_path)
+
+        # COMPRESS
+        run(input_paths=input_paths, output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
+
+        with open(os.path.join(folder_name, new_file_name), 'wt') as f:
+            f.write('stamstam')
+
+        # ADD TO ARCHIVE
+        run(input_paths=[os.path.join(folder_name, new_file_name)], output_path=output_path, action_type=ActionTypes.ADD_TO_ARCHIVE.value, compression_type=compression_type)
+
+
+        clean([os.path.join(folder_name, new_file_name)])
+
+        assert len(os.listdir(folder_name)) == files_num
+        assert new_file_name not in os.listdir(folder_name)
+
+        clean(input_paths)
+        # DECOMPRESS
+        run(input_paths=[output_path], output_path='', action_type=ActionTypes.DECOMPRESS.value, compression_type=compression_type)
+        assert len(os.listdir(folder_name)) == files_num + 1
+        assert new_file_name in os.listdir(folder_name)
+
+
+        paths.extend(input_paths)
+
+        clean(paths)

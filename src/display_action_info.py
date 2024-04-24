@@ -48,7 +48,10 @@ class DisplayActionInfo():
 
     def show(self, result: str, compression_algorithem: str):
         self.stop_clock()
-        input_paths_size = self.get_total_size_of_directories(directories=self._input_paths)
+        try:
+            input_paths_size = self.get_total_size_of_directories(directories=self._input_paths)
+        except FileNotFoundError:
+            pass
         success = True
 
         if self._action_type == ActionTypes.COMPRESS.value:
@@ -62,9 +65,6 @@ class DisplayActionInfo():
                 print(f"Compressed Ratio: {ratio_color}")
             except ZeroDivisionError:
                 pass
-            
-        elif self._action_type == ActionTypes.DECOMPRESS.value:
-            print(print_colored(f'Deompress With {compression_algorithem} Algorithem Info:', color=self._clrs.cyan))
 
         elif self._action_type == ActionTypes.ADD_TO_ARCHIVE.value:
             print(f'Added Files Size --> {print_colored(input_paths_size, color=self._clrs.cyan)}')
