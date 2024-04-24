@@ -1,5 +1,4 @@
 * extract to specific location
-* support compressing of a empty folder
-* right now - compress a file that does not exist does not fail....
 
 * catch execptions
+* refactor filesystmem handler compress

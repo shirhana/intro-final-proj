@@ -2,7 +2,7 @@ import os
 from data_compression import DataCompression
 from compression_types import CompressionTypes
 from typing import Union
-from exceptions import NotValidCompressionAlgorithem
+from exceptions import *
 
 
 BYTES_LENGTH = 16
@@ -12,6 +12,7 @@ class Filesystem_Handler:
     def __init__(self, data_compression_algorithem: DataCompression) -> None:
         self._compression_algorithem = None
         self._output_file = None
+        self._folder_suffix = '/'
 
         self.set_compression_algorithem(compression_algorithem=data_compression_algorithem)
 
@@ -35,8 +36,9 @@ class Filesystem_Handler:
         sub_directories = os.path.dirname(file)
         if sub_directories:
             os.makedirs(sub_directories, exist_ok=True)
-        with open(file, 'wb') as f:
-            f.write(data)
+        if data:
+            with open(file, 'wb') as f:
+                f.write(data)
 
     def compress_data_to_file(self, data: str):
         compressed_data = self._compression_algorithem.compress_data(data=data)
@@ -92,11 +94,15 @@ class Filesystem_Handler:
             if os.path.isdir(full_dir_path):
                 
                 if os.path.normpath(full_dir_path) not in ignore_folders:
+                    
                     files_in_folder = os.listdir(full_dir_path)
+                    # if it is an empty folder -> compress full folder path name
+                    if len(files_in_folder) == 0:
+                        full_dir_path += self._folder_suffix
+                        self.compress_data_to_file(data=full_dir_path.encode())
 
                     # compress recursive the files which inside the directory to current folder
                     self.compress(directories=files_in_folder, subfolder=full_dir_path, ignore_files=ignore_files, ignore_extensions=ignore_extensions, ignore_folders=ignore_folders) 
-
             
             # if it is directory to file
             elif os.path.isfile(full_dir_path):
@@ -112,7 +118,10 @@ class Filesystem_Handler:
                     self.compress_data_to_file(data=full_file_data)
 
             else:
-                pass #TODO: what should happen?
+                #TODO: what should happen?
+                self.close_output_file()
+                os.remove(self._output_file.name)
+                raise MissingInputPath(f"Error - {full_dir_path} does not exist.")
 
     def should_stop(self, compressed_file_path: str = '', compressed_data: bytes = b''):
         # if compressed_data is empty and compressed file path was not inserted
@@ -135,26 +144,32 @@ class Filesystem_Handler:
 
         return next_index
     
-    def get_next_file_from_archive(self, compressed_data, view_mode=False, debug_mode=True, index=0, get_file_path=False):
+    def get_next_path_from_archive(self, compressed_data, view_mode=False, debug_mode=True, index=0, get_file_path=False):
         # get full file path from compressed data
-        file_path, next_index = self.get_decompressed_data(
+        path, next_index = self.get_decompressed_data(
             compressed_data=compressed_data,
             index=index
         )
 
-        # get original file data from compressed data
-        file_data, next_index = self.get_decompressed_data(
-            compressed_data=compressed_data, 
-            index=next_index
-        )
+        # if path presents a folder
+        if path.decode().endswith(self._folder_suffix):
+            file_data = None
+        
+         # if path presents a file
+        else:
+            # get original file data from compressed data
+            file_data, next_index = self.get_decompressed_data(
+                compressed_data=compressed_data, 
+                index=next_index
+            )
 
         if view_mode and not debug_mode:
-            print(f'{file_path.decode()} - size [{len(file_data)}]')
+            print(f'{path.decode()} - size [{len(file_data)}]')
         elif not debug_mode:
-            self.write_file(file=file_path, data=file_data)
+            self.write_file(file=path, data=file_data)
 
         if get_file_path:
-            return next_index, file_path
+            return next_index, path
         else:
             return next_index
 
@@ -172,7 +187,7 @@ class Filesystem_Handler:
         else:
             next_index = 0
 
-        next_index = self.get_next_file_from_archive(compressed_data=compressed_data, view_mode=view_mode, debug_mode=debug_mode, index=next_index)
+        next_index = self.get_next_path_from_archive(compressed_data=compressed_data, view_mode=view_mode, debug_mode=debug_mode, index=next_index)
 
         # decompress the original data recursivlly from the 
         # rest of the compressed data
@@ -200,7 +215,7 @@ class Filesystem_Handler:
         i = next_index
         while i < len(compressed_data):
             
-            next_index, file_path = self.get_next_file_from_archive(compressed_data=compressed_data, get_file_path=True, index=next_index)
+            next_index, file_path = self.get_next_path_from_archive(compressed_data=compressed_data, get_file_path=True, index=next_index)
             if file_path.decode().startswith(tuple(input_paths)):
                 count_files_removes += 1
             else:

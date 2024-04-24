@@ -141,3 +141,25 @@ def test_add_to_archive():
         paths.extend(input_paths)
 
         clean(paths)
+
+
+def test_compression_file_doesnot_exist():
+    non_exist_file = 'non-exist'
+    with pytest.raises(expected_exception=Exception, match=f"Error - {non_exist_file} does not exist."):
+        # COMPRESS
+        run(input_paths=[non_exist_file], output_path='stam.bin', action_type=ActionTypes.COMPRESS.value)
+
+def test_compress_empty_folder():
+    folder_name = 'stam'
+    output_path = 'stam.bin'
+    os.makedirs(folder_name)
+    # COMPRESS
+    run(input_paths=[folder_name], output_path=output_path, action_type=ActionTypes.COMPRESS.value)
+
+    shutil.rmtree(folder_name)
+    assert not os.path.isdir(folder_name)
+    # DECOMPRESS
+    run(input_paths=[output_path], output_path='', action_type=ActionTypes.DECOMPRESS.value)
+    assert os.path.isdir(folder_name)
+
+    clean(paths=[folder_name, output_path])

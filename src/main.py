@@ -28,7 +28,7 @@ def run(
     elif compression_type == CompressionTypes.LZ.name.lower():
         compression_algorithem = CompressionTypes.LZ.value()
     else:
-        raise Exception(f"no good")
+        raise Exception(f"Error- {compression_type} must be one of: {[member.name.lower() for member in CompressionTypes]}")
     
     handler = Filesystem_Handler(data_compression_algorithem=compression_algorithem)
 
