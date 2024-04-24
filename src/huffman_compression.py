@@ -10,7 +10,6 @@ class HuffmanCompression(DataCompression):
         self._heap = []
         self._codes = {}
         self._reverse_mapping = {}
-        # self._bigger_than_256_sign = b'*^&'
 
     class HeapNode:
         def __init__(self, char, freq):
@@ -61,8 +60,6 @@ class HuffmanCompression(DataCompression):
             heapq.heappush(self._heap, merged)
 
     def make_codes_helper(self, root, current_code):
-        print(f'here!!\nroot {root}\nroot char: {root._char}')
-        print(f'current_code: {current_code}')
         if(root == None):
             return
 

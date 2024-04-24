@@ -127,8 +127,6 @@ class Filesystem_Handler:
                 compressed_data = self.read_file(
                     file=compressed_file_path
                 )
-                if view_mode and not debug_mode:
-                    print(f"{compressed_file_path} compressed file contains:")
                 
             else: 
                 return # TODO - think of another way
@@ -137,6 +135,8 @@ class Filesystem_Handler:
             # get full file path from compressed data
                 algorithem_type, next_index = self.read_metadata(compressed_data=compressed_data)
                 self.define_compression_algorithem(algorithem_type=algorithem_type)
+                if view_mode and not debug_mode:
+                    print(f"{compressed_file_path} - [{self.get_compression_algorithem_name()}] compressed file contains:")
         else:
             next_index = 0
 

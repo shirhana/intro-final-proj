@@ -22,7 +22,8 @@ class DisplayActionInfo():
     def stop_clock(self):
         self._elapsed_time = float(time.time() - self._start_clock)
 
-    def get_folder_size(self, path):
+    @staticmethod
+    def get_folder_size(path):
         total_size = 0
         for dirpath, dirnames, filenames in os.walk(path):
             for f in filenames:
@@ -55,10 +56,13 @@ class DisplayActionInfo():
             outpath_size = self.get_total_size_of_directories(directories=[self._output_path])
             print(f"Compressed Size: {print_colored(text=outpath_size,  color=self._clrs.yellow)} bytes")
             print(f'Delta Size --> {print_colored(int(input_paths_size - outpath_size), color=self._clrs.cyan)}')
-            ratio = int(input_paths_size/outpath_size)
-            ratio_color = print_colored(text=f"{ratio}%",  color=self._clrs.green)
-            print(f"Compressed Ratio: {ratio_color}")
-
+            try:
+                ratio = int(input_paths_size/outpath_size)
+                ratio_color = print_colored(text=f"{ratio}%",  color=self._clrs.green)
+                print(f"Compressed Ratio: {ratio_color}")
+            except ZeroDivisionError:
+                pass
+            
         elif self._action_type == ActionTypes.DECOMPRESS.value:
             print(print_colored(f'Deompress With {compression_algorithem} Algorithem Info:', color=self._clrs.cyan))
 
@@ -80,8 +84,9 @@ class DisplayActionInfo():
             if self._action_type == ActionTypes.CHECK_VALIDATION.value:
                 print(print_colored(text=f'{self._input_paths} PASSED VALIDATION!',  color=self._clrs.green))
             return True
-        else:
+        elif isinstance(error_msg, dict):
             for ivalid_input_path, error_type in error_msg.items():
 
                 print(print_colored(text=f'* {ivalid_input_path} is NOT VALID COMPRESS FILE!\n{error_type}\n',  color=self._clrs.red))
             return False
+        return True
