@@ -48,7 +48,7 @@ def run(
         error_msg = handler.check_validation(archive_paths=input_paths)
         valid = display_info.alert(error_msg)
         if valid:
-            handler.decompress_files(directories=input_paths, init=True)
+            handler.decompress_files(directories=input_paths, output_path=output_path)
         
     elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
         error_msg = handler.check_validation(archive_paths=[output_path])
@@ -65,7 +65,7 @@ def run(
         error_msg = handler.check_validation(archive_paths=input_paths)
         valid = display_info.alert(error_msg)
         if valid:
-            handler.decompress_files(directories=input_paths, view_mode=True, init=True)
+            handler.decompress_files(directories=input_paths, view_mode=True)
 
     elif action_type == ActionTypes.CHECK_VALIDATION.value:
         result = handler.check_validation(archive_paths=input_paths)
@@ -76,8 +76,11 @@ def run(
 
 
 def validate_args(output_path: str, action_type: str):
-    if action_type in ['compress', 'add-to-archive'] and not output_path:
-        raise Exception(f'Missing output path parameter')
+    if action_type in [ActionTypes.COMPRESS.value, ActionTypes.ADD_TO_ARCHIVE.value] and not output_path:
+        raise Exception(f'Error - missing output path parameter.')
+    elif action_type == ActionTypes.DECOMPRESS.value:
+        if output_path and not os.path.isdir(output_path):
+            raise Exception(f'Error - output_path: {output_path} is invalid.')
 
 
 if "__main__" == __name__:

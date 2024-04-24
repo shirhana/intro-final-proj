@@ -163,3 +163,24 @@ def test_compress_empty_folder():
     assert os.path.isdir(folder_name)
 
     clean(paths=[folder_name, output_path])
+
+
+def test_decompress_to_specific_location():
+    input_paths = make_dirs(folders_num=1)
+    output_path = f"output.bin"
+    new_folder = "newfolder"
+
+    # COMPRESS
+    run(input_paths=input_paths, output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=CompressionTypes.HUFFMAN.name.lower())
+
+    os.makedirs(new_folder)
+
+    assert len(os.listdir(new_folder)) == 0
+    # DECOMPRESS TO SPECIFIC PATH
+    run(input_paths=[output_path], output_path=new_folder, action_type=ActionTypes.DECOMPRESS.value)
+    assert not len(os.listdir(new_folder)) == 0
+    assert input_paths[0] in os.listdir(new_folder)
+    for file in os.listdir(input_paths[0]):
+        assert file in os.listdir(os.path.join(new_folder, input_paths[0]))
+    input_paths.extend([output_path, new_folder])
+    clean(input_paths)

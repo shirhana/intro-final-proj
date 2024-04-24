@@ -1,4 +1,1 @@
-* extract to specific location
-
 * catch execptions
-* refactor filesystmem handler compress

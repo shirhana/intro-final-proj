@@ -144,7 +144,7 @@ class Filesystem_Handler:
 
         return next_index
     
-    def get_next_path_from_archive(self, compressed_data, view_mode=False, debug_mode=True, index=0, get_file_path=False):
+    def get_next_path_from_archive(self, compressed_data, view_mode=False, debug_mode=True, index=0, get_file_path=False, output_path: str = ""):
         # get full file path from compressed data
         path, next_index = self.get_decompressed_data(
             compressed_data=compressed_data,
@@ -166,14 +166,14 @@ class Filesystem_Handler:
         if view_mode and not debug_mode:
             print(f'{path.decode()} - size [{len(file_data)}]')
         elif not debug_mode:
-            self.write_file(file=path, data=file_data)
+            self.write_file(file=os.path.join(output_path, path.decode()), data=file_data)
 
         if get_file_path:
             return next_index, path
         else:
             return next_index
 
-    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False, debug_mode: bool = False, init_decompression: bool = False):
+    def decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '', view_mode: bool = False, debug_mode: bool = False, init_decompression: bool = False, output_path: str = ""):
         if self.should_stop(compressed_file_path=compressed_file_path, compressed_data=compressed_data):
             return
         
@@ -187,7 +187,7 @@ class Filesystem_Handler:
         else:
             next_index = 0
 
-        next_index = self.get_next_path_from_archive(compressed_data=compressed_data, view_mode=view_mode, debug_mode=debug_mode, index=next_index)
+        next_index = self.get_next_path_from_archive(compressed_data=compressed_data, view_mode=view_mode, debug_mode=debug_mode, index=next_index, output_path=output_path)
 
         # decompress the original data recursivlly from the 
         # rest of the compressed data
@@ -195,12 +195,13 @@ class Filesystem_Handler:
             compressed_data=compressed_data[next_index:], 
             subfolder=subfolder,
             view_mode=view_mode,
-            debug_mode=debug_mode
+            debug_mode=debug_mode,
+            output_path=output_path
         )
 
-    def decompress_files(self, directories: list, view_mode: bool = False, init: bool = False):
+    def decompress_files(self, directories: list, output_path: str = '', view_mode: bool = False):
         for compressed_file in directories:
-            self.decompress(compressed_file_path=compressed_file, view_mode=view_mode, init_decompression=init)
+            self.decompress(compressed_file_path=compressed_file, view_mode=view_mode, init_decompression=True, output_path=output_path)
 
     def remove_from_archive(self, input_paths: list, archive_path:str):
         count_files_removes = 0
