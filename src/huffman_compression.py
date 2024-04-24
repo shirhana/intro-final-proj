@@ -120,10 +120,10 @@ class HuffmanCompression(DataCompression):
         byte_array = self.get_byte_array(padded_encoded_text)
         compress_data = bytearray()
         huffman_table_len = len(json.dumps(self._reverse_mapping).encode())
-        if huffman_table_len >= 256:
-            a = huffman_table_len // 256
-            b = huffman_table_len % 256
-            compress_data.extend(self._bigger_than_256_sign)
+        if huffman_table_len >= self._max_bytes_range:
+            a = huffman_table_len // self._max_bytes_range
+            b = huffman_table_len % self._max_bytes_range
+            compress_data.extend(self._bigger_than_max_bytes_sign)
             compress_data.extend(a.to_bytes(1, byteorder='big'))
             compress_data.extend(b.to_bytes(1, byteorder='big'))
         else:
@@ -159,9 +159,9 @@ class HuffmanCompression(DataCompression):
         return bytes(b)
 
     def decompress_data(self, compressed_data):
-        if compressed_data[0] == self._bigger_than_256_sign[0] and compressed_data[1] == self._bigger_than_256_sign[1] and compressed_data[2] == self._bigger_than_256_sign[2]:
+        if compressed_data[0] == self._bigger_than_max_bytes_sign[0] and compressed_data[1] == self._bigger_than_max_bytes_sign[1] and compressed_data[2] == self._bigger_than_max_bytes_sign[2]:
             start_index = 5
-            huffman_table_len = 256 * compressed_data[3] + compressed_data[4] + 4
+            huffman_table_len = self._max_bytes_range * compressed_data[3] + compressed_data[4] + 4
         else:
             start_index = 1
             huffman_table_len = compressed_data[0]

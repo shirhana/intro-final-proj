@@ -5,7 +5,9 @@ from typing import Union
 class DataCompression(ABC):
 
     def __init__(self) -> None:
-        self._bigger_than_256_sign = b'*^&'
+        self._max_bytes_range = 256
+        self._bigger_than_max_bytes_sign = b'*^&'
+
     
     @abstractmethod
     def compress_data(data: Union[str, bytes]) -> bytes:

@@ -6,6 +6,25 @@ class LempelZivCompression(DataCompression):
     def __init__(self) -> None:
         super().__init__()
         self._last_data_bytes_sign = b"***"
+
+    def compress_prev(self, result, prev, compress_data):
+        if result[prev] >= self._max_bytes_range:
+            compress_data.extend(self._bigger_than_max_bytes_sign)
+            a = int(result[prev] / self._max_bytes_range)
+            b = result[prev] % self._max_bytes_range
+            compress_data.append(a)
+            compress_data.append(b)
+        else:
+            compress_data.append(result[prev])
+
+    def get_byte_representation(self, n: int):
+        if n == 0:
+            byte_representation = b'\x00'
+        else:
+            num_bytes = (n.bit_length() + 7) // 8
+            byte_representation = n.to_bytes(num_bytes, byteorder='big')
+
+        return byte_representation
         
     def compress_data(self, data):
         compress_data = bytearray()
@@ -14,11 +33,7 @@ class LempelZivCompression(DataCompression):
         prev = b""
         current = None
         for c in data:
-            if c == 0:
-                byte_representation = b'\x00'
-            else:
-                num_bytes = (c.bit_length() + 7) // 8
-                byte_representation = c.to_bytes(num_bytes, byteorder='big')
+            byte_representation = self.get_byte_representation(c)
             current = prev + byte_representation
             if current in result:
                 prev = current
@@ -27,39 +42,68 @@ class LempelZivCompression(DataCompression):
                 if prev == b"":
                     compress_data.append(0)
                 else:
-                    if result[prev] >= 256:
-                        compress_data.extend(self._bigger_than_256_sign)
-                        a = int(result[prev] / 256)
-                        b = result[prev] % 256
-                        compress_data.append(a)
-                        compress_data.append(b)
-                    else:
-                        compress_data.append(result[prev])
-
-                # compress_data.extend(chr(c).encode())
-                if c == 0:
-                    byte_representation = b'\x00'
-                else:
-                    num_bytes = (c.bit_length() + 7) // 8
-                    byte_representation = c.to_bytes(num_bytes, byteorder='big')
-                
+                    self.compress_prev(result=result, prev=prev, compress_data=compress_data)
+                    
+                byte_representation = self.get_byte_representation(c)
                 compress_data.extend(byte_representation)
-                
                 prev = b""
                 index += 1 
 
         if prev == current:
             compress_data.extend(self._last_data_bytes_sign)
-            if result[prev] >= 256:
-                compress_data.extend(self._bigger_than_256_sign)
-                a = int(result[prev] / 256)
-                b = result[prev] % 256
-                compress_data.append(a)
-                compress_data.append(b)
-            else:
-                compress_data.append(result[prev])
+            self.compress_prev(result=result, prev=prev, compress_data=compress_data)
     
         return bytes(compress_data)
+    
+    def bigger_than_max_bytes(self, compressed_data, i):
+        if compressed_data[i] == self._bigger_than_max_bytes_sign[0] and compressed_data[i+1] == self._bigger_than_max_bytes_sign[1] and compressed_data[i+2] == self._bigger_than_max_bytes_sign[2]:
+            return True
+        return False
+    
+    def decompress_data_bigger_than_max_size(self, decompress_data, compressed_data, codebook, index):
+        codebook_index = self._max_bytes_range * compressed_data[i+3] + compressed_data[i+4]
+        prev = self.get_key_by_val(d=codebook, value=codebook_index)
+        self.update_decompress_data(decompress_data=decompress_data, prev=prev, extra_append=compressed_data[i+5])
+        byte_representation = self.get_byte_representation(n=compressed_data[i+5])
+        self.update_codebook(codebook, prev, byte_representation, index)
+        i += 6
+        return i
+    
+    def end_of_data(self, compressed_data, i):
+        if i+3 < len(compressed_data) and compressed_data[i] == self._last_data_bytes_sign[0] and compressed_data[i+1] == self._last_data_bytes_sign[1] and compressed_data[i+2] == self._last_data_bytes_sign[2]:
+            return True
+        return False
+    
+    def get_key_by_val(self, d: dict, value):
+        return next((key for key, val in d.items() if val == value))
+    
+    def update_codebook(self, codebook, prev, byte_representation, index):
+        p = prev + byte_representation
+        codebook[p] = index
+
+    def update_decompress_data(self, decompress_data, prev, extra_append=None):
+        decompress_data.extend(prev)
+
+        if extra_append is not None:
+            decompress_data.append(extra_append)
+
+    def decompress_end_of_data(self, compressed_data, codebook, decompress_data, i):
+        if self.bigger_than_max_bytes(compressed_data=compressed_data, i=i+3):
+            codebook_index = self._max_bytes_range * compressed_data[i+6] + compressed_data[i+7]
+        else:
+            codebook_index = compressed_data[i+3]
+
+        prev = self.get_key_by_val(d=codebook, value=codebook_index)
+        self.update_decompress_data(decompress_data=decompress_data, prev=prev)
+
+    def decompress_regular_data(self, decompress_data, compressed_data, codebook, codebook_index, index, i):
+        prev = self.get_key_by_val(d=codebook, value=codebook_index)
+        self.update_decompress_data(decompress_data=decompress_data, prev=prev, extra_append=compressed_data[i+1])
+
+        byte_representation = self.get_byte_representation(n=compressed_data[i+1])
+        self.update_codebook(codebook, prev, byte_representation, index)
+        i += 2
+        return i
 
     def decompress_data(self, compressed_data: str | bytes) -> bytes:
         decompress_data = bytearray()
@@ -71,54 +115,32 @@ class LempelZivCompression(DataCompression):
             if codebook_index == 0:
                 decompress_data.append(compressed_data[i+1])
                 prev = b""
-                if compressed_data[i+1] == 0:
-                    byte_representation = b'\x00'
-                else:
-                    num_bytes = (compressed_data[i+1].bit_length() + 7) // 8
-                    byte_representation = compressed_data[i+1].to_bytes(num_bytes, byteorder='big')
-                p = prev + byte_representation
-                codebook[p] = index
+                byte_representation = self.get_byte_representation(n=compressed_data[i+1])
+                self.update_codebook(codebook, prev, byte_representation, index)
                 i += 2
-            elif i+5 < len(compressed_data) and compressed_data[i] == self._bigger_than_256_sign[0] and compressed_data[i+1] == self._bigger_than_256_sign[1] and compressed_data[i+2] == self._bigger_than_256_sign[2]:
-                codebook_index = 256 * compressed_data[i+3] + compressed_data[i+4]
-                prev = next((key for key, val in codebook.items() if val == codebook_index))
-                decompress_data.extend(prev)
-                decompress_data.append(compressed_data[i+5])
-                
-
-                if compressed_data[i+5] == 0:
-                    byte_representation = b'\x00'
-                else:
-                    num_bytes = (compressed_data[i+5].bit_length() + 7) // 8
-                    byte_representation = compressed_data[i+5].to_bytes(num_bytes, byteorder='big')
-                
-
-                p = prev + byte_representation
-                codebook[p] = index
-                i += 6
-            elif i+3 < len(compressed_data) and compressed_data[i] == self._last_data_bytes_sign[0] and compressed_data[i+1] == self._last_data_bytes_sign[1] and compressed_data[i+2] == self._last_data_bytes_sign[2]:
-                if i+7 < len(compressed_data) and compressed_data[i+3] == self._bigger_than_256_sign[0] and compressed_data[i+4] == self._bigger_than_256_sign[1] and compressed_data[i+5] == self._bigger_than_256_sign[2]:
-                    codebook_index = 256 * compressed_data[i+6] + compressed_data[i+7]
-                    prev = next((key for key, val in codebook.items() if val == codebook_index))
-                    decompress_data.extend(prev)
-                else:
-                    prev = next((key for key, val in codebook.items() if val == compressed_data[i+3]))
-                    decompress_data.extend(prev)
+            elif self.bigger_than_max_bytes(compressed_data=compressed_data, i=i):
+                i = self.decompress_data_bigger_than_max_size(
+                    decompress_data=decompress_data, 
+                    compressed_data=compressed_data, 
+                    codebook=codebook, 
+                    index=index
+                )
+            elif self.end_of_data(compressed_data=compressed_data, i=i):
+                self.decompress_end_of_data(
+                    compressed_data=compressed_data,
+                    codebook=codebook,
+                    decompress_data=decompress_data,
+                    i=i
+                )
                 break
             else:
-                prev = next((key for key, val in codebook.items() if val == codebook_index))
-                decompress_data.extend(prev)
-                decompress_data.append(compressed_data[i+1])
-
-
-                if compressed_data[i+1] == 0:
-                    byte_representation = b'\x00'
-                else:
-                    num_bytes = (compressed_data[i+1].bit_length() + 7) // 8
-                    byte_representation = compressed_data[i+1].to_bytes(num_bytes, byteorder='big')
-                p = prev + byte_representation
-                codebook[p] = index
-                i += 2
+                i = self.decompress_regular_data(
+                    decompress_data=decompress_data,
+                    compressed_data=compressed_data,
+                    codebook=codebook,
+                    codebook_index=codebook_index, 
+                    index=index, i=i
+                )
             
             index += 1
         return bytes(decompress_data)

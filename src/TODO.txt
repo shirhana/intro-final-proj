@@ -2,6 +2,4 @@
 * support compressing of a empty folder
 * right now - compress a file that does not exist does not fail....
 
-* refactor lempel ziv and filesystem handle
-* test display action info
 * catch execptions
