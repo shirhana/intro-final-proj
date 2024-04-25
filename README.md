@@ -1,5 +1,5 @@
 ## My Final Project In INTRO Course
-<img src="src\static\images\compress_fly.jpg" width="170" height="170" />
+<img src="static\images\compress_fly.jpg" width="170" height="170" />
 
 ## Installation
 
@@ -9,7 +9,7 @@ Install using pip:
 
 ## Usage
 
-`python src/main.py [--input_paths_list DIRECTORIES] [--output_path DIRECTORY] [--compression_type CompressionTypes] [--action_type ActionTypes] [--byte_size INT] [--ignore_files LIST] [--ignore_folders LIST] [--ignore_extensions LIST]`
+`python main.py [--input_paths_list DIRECTORIES] [--output_path DIRECTORY] [--compression_type CompressionTypes] [--action_type ActionTypes] [--byte_size INT] [--ignore_files LIST] [--ignore_folders LIST] [--ignore_extensions LIST]`
 
 | Argument                            | Description                                             |
 |-------------------------------------|---------------------------------------------------------| 
@@ -27,42 +27,49 @@ Install using pip:
 
 **Compress assets folder into archive file called output.bin:**
 
-`python src/main.py --input_paths_list assets --output_path output.bin --action_type compress`
+`python main.py --input_paths_list assets --output_path output.bin --action_type compress`
 
 **Compress with huffman algorithem:**
 
-`python src/main.py --input_paths_list assets --output_path output.bin --action_type compress --compression_type huffman`
+`python main.py --input_paths_list assets --output_path output.bin --action_type compress --compression_type huffman`
 
 **Compress and ignore all files with 'png'/'txt' extension:**
 
-`python src/main.py --input_paths_list assets --output_path output.bin --action_type compress --ignore_extensions png txt`
+`python main.py --input_paths_list assets --output_path output.bin --action_type compress --ignore_extensions png txt`
 
 **Decompress archive file - output.bin:**
 
-`python src/main.py --input_paths_list output.bin --action_type decompress`
+`python main.py --input_paths_list output.bin --action_type decompress`
 
 **View files inside archive file - output.bin:**
 
-`python src/main.py --input_paths_list output.bin --action_type view-archive`
+`python main.py --input_paths_list output.bin --action_type view-archive`
 
 **Add files into archive file - output.bin:**
 
-`python src/main.py --input_paths_list path/to/new/file --output_path output.bin --action_type add-to-archive`
+`python main.py --input_paths_list path/to/new/file --output_path output.bin --action_type add-to-archive`
 
 **Remove files from archive file - output.bin:**
 
-`python src/main.py --input_paths_list path/to/file/pre/delete --output_path output.bin --action_type remove-from-archive`
+`python main.py --input_paths_list path/to/file/pre/delete --output_path output.bin --action_type remove-from-archive`
 
 **Update files from archive file - output.bin:**
 
-`python src/main.py --input_paths_list path/to/file/pre/upadte1 path/to/file/pre/upadte2 --output_path output.bin --action_type update-archive`
+`python main.py --input_paths_list path/to/file/pre/upadte1 path/to/file/pre/upadte2 --output_path output.bin --action_type update-archive`
 
 
 ## UI 
 
 **Setup CompressFly UI:**
 
-`python src/main_ui.py`
+`python main_ui.py`
+
+## DOCUMENTION
+
+**Setup Documention with mkdocs:**
+
+1) `python -m mkdocs build`
+2) `python -m mkdocs serve`
 
 
 ## Tests

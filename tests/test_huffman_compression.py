@@ -1,5 +1,5 @@
 import pytest
-from src.huffman_compression import *
+from huffman_compression import *
 
 
 @pytest.mark.parametrize("bytes_input, result", [

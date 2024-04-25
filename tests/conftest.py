@@ -10,7 +10,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
 
 # Add the 'src' directory to the Python path
-sys.path.insert(0, os.path.join(project_root, 'src'))
+# sys.path.insert(0, os.path.join(project_root, ''))
 
 
 def clean():

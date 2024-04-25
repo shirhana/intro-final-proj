@@ -8,6 +8,8 @@ from exceptions import *
 BYTES_LENGTH = 16
 
 class FilesystemHandler:
+    """Filesystem class
+    """    
 
     def __init__(self, data_compression_algorithem: DataCompression) -> None:
         self._compression_algorithem = None

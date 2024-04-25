@@ -1,8 +1,8 @@
 import shutil
-from src.display_action_info import DisplayActionInfo
+from display_action_info import DisplayActionInfo
 import pytest
 import os
-from src.action_types import ActionTypes
+from action_types import ActionTypes
 
 runner = DisplayActionInfo(action_type='stam', input_paths="", output_path="")
 

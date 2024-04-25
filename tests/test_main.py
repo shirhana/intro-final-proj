@@ -1,7 +1,7 @@
 import shutil
-from src.main import *
-from src.action_types import ActionTypes
-from src.compression_types import CompressionTypes
+from main import *
+from action_types import ActionTypes
+from compression_types import CompressionTypes
 import os
 import pytest
 

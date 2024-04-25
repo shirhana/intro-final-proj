@@ -1,5 +1,5 @@
 import pytest
-from src.lempel_ziv_compression import *
+from lempel_ziv_compression import *
 
 
 @pytest.mark.parametrize("bytes_input, result", [

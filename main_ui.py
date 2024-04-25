@@ -163,12 +163,6 @@ def main():
                     except Exception:
                         pass
                     
-                elif action_type == ActionTypes.VIEW_ARCHIVE.value:
-                    # TODO: show archive content
-                    pass
-                
-                
-
                 # Assuming all is good, process and save out the file
                 # TODO:
                 # - Add support for overwriting
