@@ -10,9 +10,19 @@ class LempelZivCompression(DataCompression):
     def compress_prev(self, result, prev, compress_data):
         if result[prev] >= self._max_bytes_range:
             compress_data.extend(self._bigger_than_max_bytes_sign)
+            
             a = int(result[prev] / self._max_bytes_range)
+            if a >= self._max_bytes_range:
+                compress_data.extend(self._bigger_than_max_bytes_sign)
+                a = int(a / self._max_bytes_range)
+                b = a % self._max_bytes_range
+                compress_data.append(a)
+                compress_data.append(b)
+                
+            else:
+                compress_data.append(a)
+            
             b = result[prev] % self._max_bytes_range
-            compress_data.append(a)
             compress_data.append(b)
         else:
             compress_data.append(result[prev])
@@ -60,13 +70,22 @@ class LempelZivCompression(DataCompression):
             return True
         return False
     
-    def decompress_data_bigger_than_max_size(self, decompress_data, compressed_data, codebook, index):
-        codebook_index = self._max_bytes_range * compressed_data[i+3] + compressed_data[i+4]
+    def decompress_data_bigger_than_max_size(self, decompress_data, compressed_data, codebook, index, i):
+        if self.bigger_than_max_bytes(compressed_data=compressed_data, i=i+3):
+            a = self._max_bytes_range * compressed_data[i+6] + compressed_data[i+7]
+            b = compressed_data[i+8]            
+            i += 9
+        else:
+            a = compressed_data[i+3]
+            b = compressed_data[i+4]
+            i += 5
+
+        codebook_index = self._max_bytes_range * a + b
         prev = self.get_key_by_val(d=codebook, value=codebook_index)
-        self.update_decompress_data(decompress_data=decompress_data, prev=prev, extra_append=compressed_data[i+5])
-        byte_representation = self.get_byte_representation(n=compressed_data[i+5])
+        self.update_decompress_data(decompress_data=decompress_data, prev=prev, extra_append=compressed_data[i])
+        byte_representation = self.get_byte_representation(n=compressed_data[i])
         self.update_codebook(codebook, prev, byte_representation, index)
-        i += 6
+        i += 1
         return i
     
     def end_of_data(self, compressed_data, i):
@@ -75,8 +94,11 @@ class LempelZivCompression(DataCompression):
         return False
     
     def get_key_by_val(self, d: dict, value):
-        return next((key for key, val in d.items() if val == value))
-    
+        try:
+            return next((key for key, val in d.items() if val == value))
+        except StopIteration:
+            raise StopIteration(f'Error - {value} does not exist as value in dict.')
+
     def update_codebook(self, codebook, prev, byte_representation, index):
         p = prev + byte_representation
         codebook[p] = index
@@ -123,7 +145,7 @@ class LempelZivCompression(DataCompression):
                     decompress_data=decompress_data, 
                     compressed_data=compressed_data, 
                     codebook=codebook, 
-                    index=index
+                    index=index, i=i
                 )
             elif self.end_of_data(compressed_data=compressed_data, i=i):
                 self.decompress_end_of_data(

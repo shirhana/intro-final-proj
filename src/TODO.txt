@@ -4,5 +4,5 @@
 * add to README
 
 * add to archive file not exist - >failed the oriinal archive (same with update...)
-* update archive does not work
-* lz compression does not work to assets folder 
+* update archive does not work 
+* improve time running with the debug mode

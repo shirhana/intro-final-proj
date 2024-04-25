@@ -242,4 +242,3 @@ class FilesystemHandler:
                 non_valid_archive_paths[archive_path] = f'raise {type(e).__name__}({e})'
             
         return non_valid_archive_paths
-            
