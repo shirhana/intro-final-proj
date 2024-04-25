@@ -58,12 +58,11 @@ Install using pip:
 `python src/main.py --input_paths_list path/to/file/pre/upadte1 path/to/file/pre/upadte2 --output_path output.bin --action_type update-archive`
 
 
+## Tests
 
-*Please note*: updog uses HTTP basic authentication.
-To login, you should leave the username blank and just
-enter the password in the password field.
+**Test this project just by running:**
 
-
+`python -m pytest`
 
 ## ARCHITECTURE
 ![ARCHITECTURE](assets/compression-architecture2.jpg)

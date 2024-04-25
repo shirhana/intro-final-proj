@@ -75,8 +75,11 @@ def run(
 
 
 def validate_args(output_path: str, action_type: str):
-    if action_type in [ActionTypes.COMPRESS.value, ActionTypes.ADD_TO_ARCHIVE.value] and not output_path:
+    if action_type in [ActionTypes.COMPRESS.value] and not output_path:
         raise Exception(f'Error - missing output path parameter.')
+    elif action_type in [ActionTypes.ADD_TO_ARCHIVE.value, ActionTypes.REMOVE_FROM_ARCHIVE.value, ActionTypes.UPDATE_ARCHIVE.value] and \
+        not os.path.isfile(output_path):
+        raise Exception(f'Error - output path: [{output_path}] does not exist as file path.')
     elif action_type == ActionTypes.DECOMPRESS.value:
         if output_path and not os.path.isdir(output_path):
             raise Exception(f'Error - output_path: {output_path} is invalid.')

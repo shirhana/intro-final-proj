@@ -3,6 +3,5 @@
 * add documention + types
 * add to README
 
-* add to archive file not exist - >failed the oriinal archive (same with update...)
-* update archive does not work 
+* test huffman with very big files 
 * improve time running with the debug mode
