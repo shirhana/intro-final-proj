@@ -25,17 +25,17 @@ Install using pip:
 
 ## Examples
 
-**Compress tests folder into archive file called output.bin:**
+**Compress assets folder into archive file called output.bin:**
 
-`python src/main.py --input_paths_list tests/ --output_path output.bin --action_type compress`
+`python src/main.py --input_paths_list assets --output_path output.bin --action_type compress`
 
 **Compress with huffman algorithem:**
 
-`python src/main.py --input_paths_list tests/ --output_path output.bin --action_type compress --compression_type huffman`
+`python src/main.py --input_paths_list assets --output_path output.bin --action_type compress --compression_type huffman`
 
-**Compress and ignore all files with 'pyc'/'txt' extension:**
+**Compress and ignore all files with 'png'/'txt' extension:**
 
-`python src/main.py --input_paths_list tests/ --output_path output.bin --action_type compress --ignore_extensions pyc txt`
+`python src/main.py --input_paths_list assets --output_path output.bin --action_type compress --ignore_extensions png txt`
 
 **Decompress archive file - output.bin:**
 

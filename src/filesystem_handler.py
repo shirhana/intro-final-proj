@@ -57,7 +57,8 @@ class FilesystemHandler:
     def define_compression_algorithem(self, algorithem_type: bytes):
         # RLE algorithem
         if algorithem_type.startswith(CompressionTypes.RLE.value.__name__.encode()):
-            bytes_size = int.from_bytes(algorithem_type[3:][::-1], byteorder='little')
+            rle_len = len(CompressionTypes.RLE.value.__name__)
+            bytes_size = int.from_bytes(algorithem_type[rle_len:][::-1], byteorder='little')
             self.set_compression_algorithem(compression_algorithem=CompressionTypes.RLE.value(bytes_size=bytes_size))
 
         elif algorithem_type.startswith(CompressionTypes.HUFFMAN.value.__name__.encode()):
@@ -242,6 +243,3 @@ class FilesystemHandler:
             
         return non_valid_archive_paths
             
-
-        
-        

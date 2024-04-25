@@ -4,6 +4,7 @@ from data_compression import DataCompression
 class RleCompression(DataCompression):
 
     def __init__(self, bytes_size) -> None:
+        super().__init__()
         self._bytes_size = bytes_size
 
     def compress_data(self, data):
@@ -14,9 +15,7 @@ class RleCompression(DataCompression):
                 count += 1
             else:
                 if count > 1:
-                    compressed_data.append(42) # ord('*')
-                    compressed_data.append(94) # ord('^')
-                    compressed_data.append(38) # ord('&')
+                    compressed_data.extend(self._bigger_than_max_bytes_sign)
                     compressed_data.append(count)
                 compressed_data.extend(data[i:i+self._bytes_size])
                 count = 1
@@ -28,7 +27,7 @@ class RleCompression(DataCompression):
         decompressed_data = bytearray()
         i = 0
         while i < len(compressed_data):
-            if compressed_data[i] == 42 and compressed_data[i+1] == 94 and compressed_data[i+2] == 38: # ord('*'), ord('^'), ord('&')
+            if compressed_data[i] == self._bigger_than_max_bytes_sign[0] and compressed_data[i+1] == self._bigger_than_max_bytes_sign[1] and compressed_data[i+2] == self._bigger_than_max_bytes_sign[2]:
                 count = compressed_data[i+3]
                 i += 4
             else: 
