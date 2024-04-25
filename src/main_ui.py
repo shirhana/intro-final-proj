@@ -140,7 +140,7 @@ def main():
             if not is_valid_upload_path(path, base_directory):
                 return redirect(request.referrer)
             
-            action_type = request.form['action_type']
+            action_type = request.form['action']
             compression_type = request.form['compression_type']
             error_msg_dict = {}
             for file in request.files.getlist('file'):

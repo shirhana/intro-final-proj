@@ -39,26 +39,7 @@
                     <i class="fa fa-upload"></i>
                     <span>Choose a file…</span>
                 </label>
-                <input type="hidden" name="path" value="{{ directory }}">
-            </div>
-            <!-- -- Actions Type -- -->
-            <div class="compressionType_P">
-                <label for="compression">Choose Action Type:</label><br>
-                <label class="actionBtn" for="compress">
-                    <input type="radio" id="compress" name="action_type" value="compress" checked>
-                    COMPRESS
-                </label><br>
-                <label class="actionBtn" for="decompress">
-                    <input type="radio" id="decompress" name="action_type" value="decompress">
-                    DECOMPRESS
-                </label><br>
-                <label class="actionBtn" for="view-archive">
-                    <input type="radio" id="view-archive" name="action_type" value="view-archive">
-                    VIEW ARCHIVE
-                </label>
-            </div>
-            <!-- -- Compression Type -- -->
-            <div class="compressionType_P">
+                <input type="hidden" name="path" value="{{ directory }}"><br><br>
                 <label for="compression">Choose Compression Type:</label><br>
                 <label class="compressionBtn" for="rle">
                     <input type="radio" id="rle" name="compression_type" value="rle" checked>
@@ -71,12 +52,12 @@
                 <label class="compressionBtn" for="lz">
                     <input type="radio" id="lz" name="compression_type" value="lz">
                     LEMPEL-ZIV
-                </label>
-            </div>
-            <!-- -- Upload Btn -- -->
-            <div class="uploadBtn_P">
-                <button type="submit" class="uploadBtn btn btn-primary">
-                    SHA-GER!
+                </label><br><br>
+                <button type="submit" name="action" value="compress" class="uploadBtn btn btn-primary">
+                    COMPRESS  
+                </button>
+                <button type="submit" name="action" value="decompress" class="uploadBtn btn btn-primary">
+                    DECOMPRESS
                 </button>
             </div>
         </form>

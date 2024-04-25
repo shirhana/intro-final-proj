@@ -58,6 +58,13 @@ Install using pip:
 `python src/main.py --input_paths_list path/to/file/pre/upadte1 path/to/file/pre/upadte2 --output_path output.bin --action_type update-archive`
 
 
+## UI 
+
+**Setup CompressFly UI:**
+
+`python src/main_ui.py`
+
+
 ## Tests
 
 **Test this project just by running:**

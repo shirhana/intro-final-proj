@@ -1,5 +1,4 @@
 * catch execptions
-* finish ui
 * add documention + types
 * add to README
 
