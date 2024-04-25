@@ -2,7 +2,7 @@ import os
 import shutil
 import pytest
 from src.rle_compression import RleCompression
-from src.filesystem_handler import Filesystem_Handler
+from src.filesystem_handler import FilesystemHandler
 
 
 def create_file(file_path, data):
@@ -40,7 +40,7 @@ def test_basic_compression_and_decompression():
     pre_compress(output_file, file_path, file_data)
 
     rle_algorithem = RleCompression(bytes_size=1)
-    handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem)
+    handler = FilesystemHandler(data_compression_algorithem=rle_algorithem)
 
     handler.open_output_file(output_file_path=output_file)
     handler.compress(directories=[file_path])
@@ -66,7 +66,7 @@ def test_recursive_compression_and_decompression():
     create_file(file_path, file_data)
 
     rle_algorithem = RleCompression(bytes_size=1)
-    handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem)
+    handler = FilesystemHandler(data_compression_algorithem=rle_algorithem)
 
     handler.open_output_file(output_file_path=output_file)
     handler.compress(directories=[folder])
@@ -91,7 +91,7 @@ def test_some_files_compression_and_decompression():
         create_file(file_path, f'{file_path}-data')
 
     rle_algorithem = RleCompression(bytes_size=1)
-    handler = Filesystem_Handler(data_compression_algorithem=rle_algorithem)
+    handler = FilesystemHandler(data_compression_algorithem=rle_algorithem)
 
     handler.open_output_file(output_file_path=output_file)
     handler.compress(directories=files_path)

@@ -1,10 +1,7 @@
 import os
 import argparse
 from utility import create_cefd_banner
-from huffman_compression import HuffmanCompression
-from rle_compression import RleCompression
-from lempel_ziv_compression import LempelZivCompression
-from filesystem_handler import Filesystem_Handler
+from filesystem_handler import FilesystemHandler
 from display_action_info import DisplayActionInfo
 from action_types import ActionTypes
 from compression_types import CompressionTypes
@@ -30,7 +27,7 @@ def run(
     else:
         raise Exception(f"Error- {compression_type} must be one of: {[member.name.lower() for member in CompressionTypes]}")
     
-    handler = Filesystem_Handler(data_compression_algorithem=compression_algorithem)
+    handler = FilesystemHandler(data_compression_algorithem=compression_algorithem)
 
     display_info = DisplayActionInfo(action_type=action_type, input_paths=input_paths, output_path=output_path)
     result = ''

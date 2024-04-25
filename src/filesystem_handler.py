@@ -7,7 +7,7 @@ from exceptions import *
 
 BYTES_LENGTH = 16
 
-class Filesystem_Handler:
+class FilesystemHandler:
 
     def __init__(self, data_compression_algorithem: DataCompression) -> None:
         self._compression_algorithem = None
