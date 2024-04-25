@@ -2,3 +2,7 @@
 * finish ui
 * add documention + types
 * add to README
+
+# compress with ignore extension and then decompress -> failed
+* add to archive file not exist - >failed the oriinal archive (same with update...)
+* update archive does not work

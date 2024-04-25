@@ -24,3 +24,4 @@ def test_compress(bytes_input, bytes_size, result):
 def test_decompress(compressed_data, bytes_size, result):
     data_compression = RleCompression(bytes_size=bytes_size)
     assert result == data_compression.decompress_data(compressed_data=compressed_data)
+    

@@ -25,3 +25,4 @@ def test_compress(bytes_input, result):
 def test_decompress(result, compressed_data):
     data_compression = HuffmanCompression()
     assert result == data_compression.decompress_data(compressed_data=compressed_data)
+    

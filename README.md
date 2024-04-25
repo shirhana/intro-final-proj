@@ -43,7 +43,7 @@ Install using pip:
 
 **View files inside archive file - output.bin:**
 
-`python src/main.py --input_paths_list output.bin --action_type view_archive`
+`python src/main.py --input_paths_list output.bin --action_type view-archive`
 
 **Add files into archive file - output.bin:**
 
