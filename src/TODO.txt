@@ -1,1 +1,5 @@
 * catch execptions
+* finish ui
+* add documention + types
+* README
+* Diagram

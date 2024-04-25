@@ -49,6 +49,8 @@ def run(
         valid = display_info.alert(error_msg)
         if valid:
             handler.decompress_files(directories=input_paths, output_path=output_path)
+        else:
+            return error_msg
         
     elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
         error_msg = handler.check_validation(archive_paths=[output_path])
