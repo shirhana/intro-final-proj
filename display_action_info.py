@@ -161,7 +161,13 @@ class DisplayActionInfo:
         Prints information about the removal process, indicating 
         success or failure based on the result.
         """
-        if result == 0:
+        if result == None:
+            msg = f"Cannot remove {self._input_paths}!\n"
+            msg += f"{self._output_path} is NOT VALID COMPRESS FILE!"
+            print(print_colored(text=msg,  color=self._clrs.red))
+            return False
+        
+        elif result == 0:
             msg = f"Cannot remove {self._input_paths}!\n"
             msg += f"Those files or directories do not exist "
             msg += f"inside {self._output_path}."
@@ -172,12 +178,31 @@ class DisplayActionInfo:
             msg += f"{self._output_path} archive file."
             print(print_colored(text=msg,  color=self._clrs.green))
             return True
+        
+    def show_update_archive_info(self, result: bool) -> None:
+        """Display information about updating files in archive.
+
+        Args:
+            result (bool): indicates when the updating was succeeded.
+
+        Returns:
+            bool: True if updation was successful, False otherwise.
+
+        Prints information about the updation process, indicating 
+        success or failure based on the result.
+        """
+        if result == False:
+            msg = f"Cannot handle with {self._input_paths}!\n"
+            msg += f"{self._output_path} is NOT VALID COMPRESS FILE!"
+            print(print_colored(text=msg,  color=self._clrs.red))
+
+        return result
                 
-    def show(self, result: str, compression_algorithem: str) -> None:
+    def show(self, result: str | bool, compression_algorithem: str) -> None:
         """Show information related to the action.
 
         Args:
-            result (str): Result or output of the action.
+            result (str|bool): Result or output of the action.
             compression_algorithm (str): Name of the compression 
             algorithm used.
         """
@@ -192,15 +217,14 @@ class DisplayActionInfo:
         if self._action_type == ActionTypes.COMPRESS.value:
             self.show_compress_info(
                 compression_algorithem=compression_algorithem,
-                input_paths_size=input_paths_size)
-
-        elif self._action_type == ActionTypes.ADD_TO_ARCHIVE.value:
-            clr_files_size = print_colored(input_paths_size, 
-                                       color=self._clrs.cyan)
-            print(f'Added Files Size --> {clr_files_size}')
+                input_paths_size=input_paths_size)            
 
         elif self._action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
             success = self.show_remove_from_archive_info(result=result)
+
+        elif self._action_type == ActionTypes.UPDATE_ARCHIVE.value or \
+         self._action_type == ActionTypes.ADD_TO_ARCHIVE.value:
+            success = self.show_update_archive_info(result=result)
 
         if success:
             self.display_elapsed_time()

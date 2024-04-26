@@ -434,11 +434,13 @@ class FilesystemHandler:
                 index=next_index
             )
 
-        if view_mode and not debug_mode:
-            print(f'{path.decode()} - size [{len(file_data)}]')
-        elif not debug_mode:
-            file_path = os.path.join(output_path, path.decode())
+        file_name = path.decode()
+        if file_name and view_mode and not debug_mode:
+            print(f'{file_name} - size [{len(file_data)}]')
+        elif file_name and not debug_mode:
+            file_path = os.path.join(output_path, file_name)
             self.write_file(file=file_path, data=file_data)
+            print(f'Done extract & write {file_path}.')
 
         if get_file_path:
             return next_index, path
@@ -502,7 +504,7 @@ class FilesystemHandler:
 
     def decompress_files(
             self, directories: list, output_path: str = '', 
-            view_mode: bool = False) -> None:
+            view_mode: bool = False, debug_mode: bool = False) -> dict:
         """Decompress multiple files.
 
         Args:
@@ -511,14 +513,27 @@ class FilesystemHandler:
             files. Defaults to ''.
             view_mode (bool, optional): Whether to display the decompression 
             mode. Defaults to False.
+            debug_mode (bool, optional): Whether to enable debug mode. 
+
+        Returns:
+            dict: A dictionary containing non-valid archive paths 
+            and their corresponding error messages.
         """
+        non_valid_archive_paths = {}
         for compressed_file in directories:
-            self.decompress(compressed_file_path=compressed_file, 
-                            view_mode=view_mode, init_decompression=True, 
-                            output_path=output_path)
+            try: 
+                self.decompress(compressed_file_path=compressed_file, 
+                                view_mode=view_mode, init_decompression=True, 
+                                output_path=output_path, 
+                                debug_mode=debug_mode)
+            except Exception as e:
+                non_valid_archive_paths[compressed_file] = \
+                    f'raise {type(e).__name__}({e})'
+            
+        return non_valid_archive_paths
 
     def remove_from_archive(self, input_paths: list, 
-                            archive_path:str) -> None:
+                            archive_path:str) -> int:
         """Remove files from an archive and update the archive.
 
         Args:
@@ -526,44 +541,54 @@ class FilesystemHandler:
             archive_path (str): Path to the archive.
 
         Returns:
-            int: Number of files removed from the archive.
+            int | None: Number of files removed from the archive.
         """
-        count_files_removes = 0
-        update_compressed_data = bytearray()
-        compressed_data = self.read_file(
-            file=archive_path
-        )
+        try:
+            count_files_removes = 0
+            update_compressed_data = bytearray()
+            compressed_data = self.read_file(
+                file=archive_path
+            )
 
-        next_index = self.handle_init_decompression(
-            compressed_data=compressed_data)
-        update_compressed_data.extend(compressed_data[0:next_index])
+            next_index = self.handle_init_decompression(
+                compressed_data=compressed_data)
+            update_compressed_data.extend(compressed_data[0:next_index])
 
-        i = next_index
-        while i < len(compressed_data):
-            
-            next_index, file_path = self.get_next_path_from_archive(
-                compressed_data=compressed_data, 
-                get_file_path=True, index=next_index)
-            if file_path.decode().startswith(tuple(input_paths)):
-                count_files_removes += 1
-            else:
-                update_compressed_data.extend(compressed_data[i:next_index])
-            
             i = next_index
+            while i < len(compressed_data):
+                
+                next_index, file_path = self.get_next_path_from_archive(
+                    compressed_data=compressed_data, 
+                    get_file_path=True, index=next_index)
+                if file_path.decode().startswith(tuple(input_paths)):
+                    count_files_removes += 1
+                else:
+                    update_compressed_data.extend(compressed_data[i:next_index])
+                
+                i = next_index
+        except Exception as e:
+            return
         
         self.write_file(file=archive_path, data=bytes(update_compressed_data))
         return count_files_removes
     
-    def update_archive(self, input_paths: list, archive_path:str) -> None:
+    def update_archive(self, input_paths: list, archive_path:str) -> bool:
         """Update an existing archive with new files.
 
         Args:
             input_paths (list): List of paths to add to the archive.
             archive_path (str): Path to the archive.
+
+        Returns:
+            bool: True if the archive path is valid, False otherwise.
         """
-        self.remove_from_archive(input_paths=input_paths, 
+        result = self.remove_from_archive(input_paths=input_paths, 
                                  archive_path=archive_path)
-        self.compress(directories=input_paths)
+        if result == None:
+            return False
+        else:
+            self.compress(directories=input_paths)
+            return True
 
     def check_validation(self, archive_paths: str) -> dict:
         """Check the validation of archived files and directories.
@@ -576,14 +601,5 @@ class FilesystemHandler:
             dict: A dictionary containing non-valid archive paths 
             and their corresponding error messages.
         """
-        non_valid_archive_paths = {}
-        for archive_path in archive_paths:
-            try:
-                self.decompress(compressed_file_path=archive_path, 
-                                debug_mode=True, init_decompression=True)
-            
-            except Exception as e:
-                non_valid_archive_paths[archive_path] = \
-                    f'raise {type(e).__name__}({e})'
-            
-        return non_valid_archive_paths
+    
+        return self.decompress_files(directories=archive_paths, debug_mode=True)

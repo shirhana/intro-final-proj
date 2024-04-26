@@ -58,33 +58,24 @@ def run(
         handler.close_output_file()
          
     elif action_type == ActionTypes.DECOMPRESS.value:
-        error_msg = handler.check_validation(archive_paths=input_paths)
+        error_msg = handler.decompress_files(
+            directories=input_paths, output_path=output_path)
         valid = display_info.alert(error_msg)
-        if valid:
-            handler.decompress_files(directories=input_paths, 
-                                     output_path=output_path)
-        else:
-            return error_msg
         
     elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
-        error_msg = handler.check_validation(archive_paths=[output_path])
-        valid = display_info.alert(error_msg)
-        if valid:
-            result = handler.remove_from_archive(input_paths=input_paths, 
+        result = handler.remove_from_archive(input_paths=input_paths, 
                                                  archive_path=output_path)
                 
     elif action_type == ActionTypes.UPDATE_ARCHIVE.value or \
         action_type == ActionTypes.ADD_TO_ARCHIVE.value:
         handler.open_output_file(output_file_path=output_path)
-        handler.update_archive(
+        result = handler.update_archive(
             input_paths=input_paths, archive_path=output_path)
         handler.close_output_file()
 
     elif action_type == ActionTypes.VIEW_ARCHIVE.value:
-        error_msg = handler.check_validation(archive_paths=input_paths)
-        valid = display_info.alert(error_msg)
-        if valid:
-            handler.decompress_files(directories=input_paths, view_mode=True)
+        error_msg = handler.decompress_files(directories=input_paths, view_mode=True)
+        valid = display_info.alert(error_msg)            
 
     elif action_type == ActionTypes.CHECK_VALIDATION.value:
         result = handler.check_validation(archive_paths=input_paths)

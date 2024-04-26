@@ -1,6 +1,6 @@
 * catch execptions
-* add documention + types
-* add to README
+
 
 * test huffman with very big files 
-* improve time running with the debug mode
+* lz does not work with very big files 
+* design many exceptions and develop...
