@@ -2,12 +2,56 @@ from data_compression import DataCompression
 
 
 class LempelZivCompression(DataCompression):
+    """
+    Implements the Lempel-Ziv compression algorithm for data compression.
+
+    This class inherits from DataCompression and provides methods for 
+    compressingand decompressing data using the Lempel-Ziv algorithm.
+
+    Attributes:
+        _last_data_bytes_sign (bytes): The sign used to mark the last 
+        data bytes.
+
+    Methods:
+        __init__: Initialize the LempelZivCompression object.
+        compress_prev: Compress the previous sequence in the compression 
+        process.
+        get_byte_representation: Get the byte representation of an integer.
+        compress_data: Compress data using the Lempel-Ziv algorithm.
+        bigger_than_max_bytes: Check if the compressed data uses a 
+        bigger-than-maximum byte representation.
+        decompress_data_bigger_than_max_size: Decompress data with a 
+        bigger-than-maximum byte representation.
+        end_of_data: Check if the compressed data indicates the end of 
+        the data.
+        get_key_by_val: Get a key from a dictionary by its value.
+        update_codebook: Update the codebook used in decompression.
+        update_decompress_data: Update the decompressed data during 
+        decompression.
+        decompress_regular_data: Decompress regular data in the 
+        decompression process.
+        decompress_data: Decompress data using the Lempel-Ziv algorithm.
+    """
 
     def __init__(self) -> None:
+        """
+        Initializes the LempelZivCompression object.
+
+        This constructor initializes the object and 
+        sets the last data bytes sign.
+        """
         super().__init__()
         self._last_data_bytes_sign = b"***"
 
-    def compress_prev(self, result, prev, compress_data):
+    def compress_prev(self, result: dict, prev: bytes, 
+                      compress_data: bytearray) -> None:
+        """Compresses the previous sequence in Lempel-Ziv compression.
+
+        Args:
+            result (dict): The compression result dictionary.
+            prev (bytes): The previous sequence.
+            compress_data (bytearray): The compressed data.
+        """
         if result[prev] >= self._max_bytes_range:
             compress_data.extend(self._bigger_than_max_bytes_sign)
             
@@ -27,7 +71,15 @@ class LempelZivCompression(DataCompression):
         else:
             compress_data.append(result[prev])
 
-    def get_byte_representation(self, n: int):
+    def get_byte_representation(self, n: int) -> bytes:
+        """Converts an integer into its byte representation.
+
+        Args:
+            n (int): The integer to be converted.
+
+        Returns:
+            bytes: The byte representation of the integer.
+        """
         if n == 0:
             byte_representation = b'\x00'
         else:
@@ -36,7 +88,15 @@ class LempelZivCompression(DataCompression):
 
         return byte_representation
         
-    def compress_data(self, data):
+    def compress_data(self, data: bytes) -> bytes:
+        """Compresses the input data using Lempel-Ziv compression.
+
+        Args:
+            data (bytes): The input data to be compressed.
+
+        Returns:
+            bytes: The compressed data.
+        """
         compress_data = bytearray()
         index = 1
         result = {}
@@ -65,14 +125,44 @@ class LempelZivCompression(DataCompression):
     
         return bytes(compress_data)
     
-    def bigger_than_max_bytes(self, compressed_data, i):
-        if compressed_data[i] == self._bigger_than_max_bytes_sign[0] and compressed_data[i+1] == self._bigger_than_max_bytes_sign[1] and compressed_data[i+2] == self._bigger_than_max_bytes_sign[2]:
+    def bigger_than_max_bytes(self, compressed_data: bytes, i: int) -> bool:
+        """Checks if the data size is bigger than the maximum bytes range.
+
+        Args:
+            compressed_data (bytes): The compressed data.
+            i (int): The index to check in the compressed data.
+
+        Returns:
+            bool: True if the size is bigger than the max bytes range, 
+            False otherwise.
+        """
+        if compressed_data[i] == self._bigger_than_max_bytes_sign[0] \
+            and compressed_data[i+1] == self._bigger_than_max_bytes_sign[1] \
+            and compressed_data[i+2] == self._bigger_than_max_bytes_sign[2]:
             return True
         return False
     
-    def decompress_data_bigger_than_max_size(self, decompress_data, compressed_data, codebook, index, i):
+    def decompress_data_bigger_than_max_size(
+            self, 
+            decompress_data: bytearray, 
+            compressed_data: bytes, 
+            codebook: dict, 
+            index: int, i: int) -> int:
+        """Decompresses data that is bigger than the maximum bytes range.
+
+        Args:
+            decompress_data (bytearray): The decompressed data.
+            compressed_data (bytes): The compressed data.
+            codebook (dict): The codebook for decompression.
+            index (int): The current index for decompression.
+            i (int): The current index in the compressed data.
+
+        Returns:
+            int: The updated index in the compressed data.
+        """
         if self.bigger_than_max_bytes(compressed_data=compressed_data, i=i+3):
-            a = self._max_bytes_range * compressed_data[i+6] + compressed_data[i+7]
+            a = self._max_bytes_range * compressed_data[i+6] \
+                + compressed_data[i+7]
             b = compressed_data[i+8]            
             i += 9
         else:
@@ -82,52 +172,133 @@ class LempelZivCompression(DataCompression):
 
         codebook_index = self._max_bytes_range * a + b
         prev = self.get_key_by_val(d=codebook, value=codebook_index)
-        self.update_decompress_data(decompress_data=decompress_data, prev=prev, extra_append=compressed_data[i])
-        byte_representation = self.get_byte_representation(n=compressed_data[i])
+        self.update_decompress_data(
+            decompress_data=decompress_data, prev=prev, 
+            extra_append=compressed_data[i])
+        byte_representation = self.get_byte_representation(
+            n=compressed_data[i])
         self.update_codebook(codebook, prev, byte_representation, index)
         i += 1
         return i
     
-    def end_of_data(self, compressed_data, i):
-        if i+3 < len(compressed_data) and compressed_data[i] == self._last_data_bytes_sign[0] and compressed_data[i+1] == self._last_data_bytes_sign[1] and compressed_data[i+2] == self._last_data_bytes_sign[2]:
+    def end_of_data(self, compressed_data: bytes, i: int) -> bool:
+        """Checks if the end of data is reached in decompression.
+
+        Args:
+            compressed_data (bytes): The compressed data.
+            i (int): The current index in the compressed data.
+
+        Returns:
+            bool: True if end of data, False otherwise.
+        """
+        if i+3 < len(compressed_data) and \
+            compressed_data[i] == self._last_data_bytes_sign[0] \
+                and compressed_data[i+1] == self._last_data_bytes_sign[1] and \
+                    compressed_data[i+2] == self._last_data_bytes_sign[2]:
             return True
         return False
     
-    def get_key_by_val(self, d: dict, value):
+    def get_key_by_val(self, d: dict, value: any) -> any:
+        """Gets the key from a dictionary by its value.
+
+        Args:
+            d (dict): The dictionary.
+            value: The value to search for.
+
+        Returns:
+            Any: The key corresponding to the value.
+        """
         try:
             return next((key for key, val in d.items() if val == value))
         except StopIteration:
-            raise StopIteration(f'Error - {value} does not exist as value in dict.')
+            raise StopIteration(
+                f'Error - {value} does not exist as value in dict.')
 
-    def update_codebook(self, codebook, prev, byte_representation, index):
+    def update_codebook(self, codebook: dict, prev: bytes, 
+                        byte_representation: bytes, index:int) -> None:
+        """Updates the codebook during decompression.
+
+        Args:
+            codebook (dict): The codebook dictionary.
+            prev (bytes): The previous sequence.
+            byte_representation (bytes): The byte representation of the 
+            current sequence.
+            index (int): The current index for decompression.
+        """
         p = prev + byte_representation
         codebook[p] = index
 
-    def update_decompress_data(self, decompress_data, prev, extra_append=None):
+    def update_decompress_data(self, decompress_data: bytearray, prev: bytes, 
+                               extra_append: bool = None) -> None:
+        """Updates the decompressed data during decompression.
+
+        Args:
+            decompress_data (bytearray): The decompressed data.
+            prev (bytes): The previous sequence.
+            extra_append: Additional byte to append to the decompressed data.
+        """
         decompress_data.extend(prev)
 
         if extra_append is not None:
             decompress_data.append(extra_append)
 
-    def decompress_end_of_data(self, compressed_data, codebook, decompress_data, i):
+    def decompress_end_of_data(self, compressed_data: bytes, codebook: dict, 
+                               decompress_data: bytearray, i: int) -> None:
+        """Handles decompression at the end of data.
+
+        Args:
+            compressed_data (bytes): The compressed data.
+            codebook (dict): The codebook for decompression.
+            decompress_data (bytearray): The decompressed data.
+            i (int): The current index in the compressed data.
+        """
         if self.bigger_than_max_bytes(compressed_data=compressed_data, i=i+3):
-            codebook_index = self._max_bytes_range * compressed_data[i+6] + compressed_data[i+7]
+            codebook_index = self._max_bytes_range * compressed_data[i+6] \
+                + compressed_data[i+7]
         else:
             codebook_index = compressed_data[i+3]
 
         prev = self.get_key_by_val(d=codebook, value=codebook_index)
-        self.update_decompress_data(decompress_data=decompress_data, prev=prev)
+        self.update_decompress_data(
+            decompress_data=decompress_data, prev=prev)
 
-    def decompress_regular_data(self, decompress_data, compressed_data, codebook, codebook_index, index, i):
+    def decompress_regular_data(
+            self, decompress_data: bytearray, 
+            compressed_data: bytes, codebook: dict, 
+            codebook_index: int, index: int, i: int) -> int:
+        """Handles decompression of regular data.
+
+        Args:
+            decompress_data (bytearray): The decompressed data.
+            compressed_data (bytes): The compressed data.
+            codebook (dict): The codebook for decompression.
+            codebook_index (int): The index in the codebook.
+            index (int): The current index for decompression.
+            i (int): The current index in the compressed data.
+
+        Returns:
+            int: The updated index in the compressed data.
+        """
         prev = self.get_key_by_val(d=codebook, value=codebook_index)
-        self.update_decompress_data(decompress_data=decompress_data, prev=prev, extra_append=compressed_data[i+1])
+        self.update_decompress_data(
+            decompress_data=decompress_data, prev=prev, 
+            extra_append=compressed_data[i+1])
 
-        byte_representation = self.get_byte_representation(n=compressed_data[i+1])
+        byte_representation = \
+            self.get_byte_representation(n=compressed_data[i+1])
         self.update_codebook(codebook, prev, byte_representation, index)
         i += 2
         return i
 
-    def decompress_data(self, compressed_data: str | bytes) -> bytes:
+    def decompress_data(self, compressed_data: bytes) -> bytes:
+        """Decompresses the compressed data using Lempel-Ziv decompression.
+
+        Args:
+            compressed_data (bytes): The compressed data to be decompressed.
+
+        Returns:
+            bytes: The decompressed data.
+        """
         decompress_data = bytearray()
         codebook = {}
         index = 1
@@ -168,6 +339,11 @@ class LempelZivCompression(DataCompression):
         return bytes(decompress_data)
     
     def get_metadata(self) -> bytes:
+        """Gets metadata information about the compression algorithm.
+
+        Returns:
+            bytes: Metadata information encoded as bytes.
+        """
         metadata = bytearray()
         metadata.extend(self.__class__.__name__.encode())
 
