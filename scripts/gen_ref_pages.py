@@ -5,7 +5,7 @@ from pathlib import Path
 import mkdocs_gen_files
 
 nav = mkdocs_gen_files.Nav()
-
+ignore_folders = ['tests', 'scripts', 'utils']
 root = Path(__file__).parent.parent
 src = root 
 
@@ -16,7 +16,9 @@ for path in sorted(src.rglob("*.py")):
     full_doc_path = Path("reference", doc_path)
 
     parts = tuple(module_path.parts)
-    print(f'parts: {parts}')
+    if parts[0] in ignore_folders:
+        continue
+
     if parts[-1] == "__init__":
         continue
         parts = parts[:-1]

@@ -8,13 +8,26 @@ from compression_types import CompressionTypes
 
 
 def run(
-        input_paths: list, output_path: str, action_type: str, compression_type: str = 'rle', bytes_size: int = 2, ignore_files: list = [],
-        ignore_folders: list = [], ignore_extensions: list = []) -> None:
-    """compress a single file.
+        input_paths: list, output_path: str, action_type: str, 
+        compression_type: str = 'rle', bytes_size: int = 2, 
+        ignore_files: list = [], ignore_folders: list = [], 
+        ignore_extensions: list = []) -> None:
+    """Run the specified action with compression and decompression options.
 
     Args:
-        input_file str: the file to assemble.
-        output_file str: writes all output to this file.
+        input_paths (list): List of paths to files or folders.
+        output_path (str): Path to the output file or directory.
+        action_type (str): Type of action to perform.
+        compression_type (str, optional): Type of compression algorithm. 
+        Defaults to 'rle'.
+        bytes_size (int, optional): Size of bytes for compression. 
+        Defaults to 2.
+        ignore_files (list, optional): List of files to ignore during 
+        compression. Defaults to [].
+        ignore_folders (list, optional): List of folders to ignore during 
+        compression. Defaults to [].
+        ignore_extensions (list, optional): List of file extensions to 
+        ignore during compression. Defaults to [].
     """
     validate_args(output_path=output_path, action_type=action_type)
     
@@ -38,14 +51,18 @@ def run(
             os.remove(output_path)
 
         handler.open_output_file(output_file_path=output_path)
-        handler.compress(directories=input_paths, ignore_folders=ignore_folders, ignore_extensions=ignore_extensions, ignore_files=ignore_files, init_compression=True)
+        handler.compress(
+            directories=input_paths, ignore_folders=ignore_folders, 
+            ignore_extensions=ignore_extensions, ignore_files=ignore_files, 
+            init_compression=True)
         handler.close_output_file()
          
     elif action_type == ActionTypes.DECOMPRESS.value:
         error_msg = handler.check_validation(archive_paths=input_paths)
         valid = display_info.alert(error_msg)
         if valid:
-            handler.decompress_files(directories=input_paths, output_path=output_path)
+            handler.decompress_files(directories=input_paths, 
+                                     output_path=output_path)
         else:
             return error_msg
         
@@ -53,11 +70,14 @@ def run(
         error_msg = handler.check_validation(archive_paths=[output_path])
         valid = display_info.alert(error_msg)
         if valid:
-            result = handler.remove_from_archive(input_paths=input_paths, archive_path=output_path)
+            result = handler.remove_from_archive(input_paths=input_paths, 
+                                                 archive_path=output_path)
                 
-    elif action_type == ActionTypes.UPDATE_ARCHIVE.value or action_type == ActionTypes.ADD_TO_ARCHIVE.value:
+    elif action_type == ActionTypes.UPDATE_ARCHIVE.value or \
+        action_type == ActionTypes.ADD_TO_ARCHIVE.value:
         handler.open_output_file(output_file_path=output_path)
-        handler.update_archive(input_paths=input_paths, archive_path=output_path)
+        handler.update_archive(
+            input_paths=input_paths, archive_path=output_path)
         handler.close_output_file()
 
     elif action_type == ActionTypes.VIEW_ARCHIVE.value:
@@ -71,22 +91,42 @@ def run(
         display_info.alert(result)
 
     if valid:
-        display_info.show(result=result, compression_algorithem=handler.get_compression_algorithem_name())
+        display_info.show(
+            result=result, 
+            compression_algorithem=handler.get_compression_algorithem_name())
 
 
-def validate_args(output_path: str, action_type: str):
+def validate_args(output_path: str, action_type: str) -> None:
+    """Validate the command-line arguments.
+
+    Args:
+        output_path (str): Path to the output file or directory.
+        action_type (str): Type of action to perform.
+    Raises:
+        Exception: If validation fails.
+    """
+    error_msg = ''
+    
     if action_type in [ActionTypes.COMPRESS.value] and not output_path:
-        raise Exception(f'Error - missing output path parameter.')
-    elif action_type in [ActionTypes.ADD_TO_ARCHIVE.value, ActionTypes.REMOVE_FROM_ARCHIVE.value, ActionTypes.UPDATE_ARCHIVE.value] and \
+        error_msg = f'Error - missing output path parameter.'
+
+    elif action_type in \
+        [ActionTypes.ADD_TO_ARCHIVE.value, 
+         ActionTypes.REMOVE_FROM_ARCHIVE.value, 
+         ActionTypes.UPDATE_ARCHIVE.value] and \
         not os.path.isfile(output_path):
-        raise Exception(f'Error - output path: [{output_path}] does not exist as file path.')
+        error_msg = f'Error - output path: [{output_path}] '
+        error_msg += 'does not exist as file path.'
+            
     elif action_type == ActionTypes.DECOMPRESS.value:
         if output_path and not os.path.isdir(output_path):
-            raise Exception(f'Error - output_path: {output_path} is invalid.')
+            error_msg = f'Error - output_path: {output_path} is invalid.'
 
+    if error_msg:
+        raise Exception(error_msg)
 
 if "__main__" == __name__:
-
+    # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Compression parameters')
 
     # Add optional parameters

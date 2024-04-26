@@ -2,6 +2,8 @@ import random
 
 
 class Colors:
+    """Enumeration class for color names.
+    """
     red = "red"
     green = "green"
     yellow = "yellow"
@@ -19,7 +21,9 @@ colors = {
         "cyan": "\033[96m",
     }
 
-def get_compress_string():
+def get_compress_string() -> str:
+  """Returns the ASCII art for compression.
+  """
   return r"""
     ____       ____       __  __      _____       _____       ______       _____       _____      _______
    / ___|     / __ \     |  \/  |    |  __ \     |  __ \     |  ____|     / ____|     / ____|     \     /
@@ -30,7 +34,9 @@ def get_compress_string():
 
   """
 
-def get_decompress_string():
+def get_decompress_string() -> str:
+  """Returns the ASCII art for decompression.
+  """
   return r"""
      ____       ______      ____       ____       __  __      _____       _____       ______       _____       _____      _______
     |  _ \     |  ____|    / ___|     / __ \     |  \/  |    |  __ \     |  __ \     |  ____|     / ____|     / ____|     \     /
@@ -42,7 +48,16 @@ def get_decompress_string():
   """
 
 
-def create_cefd_banner(action_type: str):
+def create_cefd_banner(action_type: str) -> str:
+  """Creates a colored banner based on the action type.
+
+    Args:
+        action_type (str): The type of action, 
+        either 'compress' or 'decompress'.
+
+    Returns:
+        str: A colored banner representing the action type.
+    """
   if action_type == 'decompress':
      banner = get_decompress_string()
   else:
@@ -59,7 +74,16 @@ def create_cefd_banner(action_type: str):
   return res
 
 
-def print_colored(text, color):
+def print_colored(text: str, color: str) -> str:
+    """Prints colored text based on the specified color.
+
+    Args:
+        text (str): The text to be printed.
+        color (str): The color name.
+
+    Returns:
+        str: The colored text.
+    """
     reset = "\033[0m"
     if color in colors:
         return f"{colors[color]}{text}{reset}"
