@@ -5,7 +5,7 @@ from pathlib import Path
 import mkdocs_gen_files
 
 nav = mkdocs_gen_files.Nav()
-ignore_folders = ['tests', 'scripts', 'utils']
+ignore_folders = ['tests', 'scripts', 'utils', '.venv']
 root = Path(__file__).parent.parent
 src = root 
 
