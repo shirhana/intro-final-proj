@@ -41,7 +41,7 @@ class LempelZivCompression(DataCompression):
         sets the last data bytes sign.
         """
         super().__init__()
-        self._last_data_bytes_sign = b"***"
+        self._last_data_bytes_sign = b"$%^"
 
     def compress_prev(self, result: dict, prev: bytes, 
                       compress_data: bytearray) -> None:
@@ -58,6 +58,7 @@ class LempelZivCompression(DataCompression):
             a = int(result[prev] / self._max_bytes_range)
             if a >= self._max_bytes_range:
                 compress_data.extend(self._bigger_than_max_bytes_sign)
+                
                 a = int(a / self._max_bytes_range)
                 b = a % self._max_bytes_range
                 compress_data.append(a)
@@ -171,6 +172,8 @@ class LempelZivCompression(DataCompression):
             i += 5
 
         codebook_index = self._max_bytes_range * a + b
+        if codebook_index == 131820:
+            print(f'a: {a}\nb: {b}')
         prev = self.get_key_by_val(d=codebook, value=codebook_index)
         self.update_decompress_data(
             decompress_data=decompress_data, prev=prev, 
@@ -348,3 +351,6 @@ class LempelZivCompression(DataCompression):
         metadata.extend(self.__class__.__name__.encode())
 
         return bytes(metadata)
+
+
+
