@@ -4,4 +4,3 @@
 * test huffman with very big files 
 * lz does not work with very big files 
 * design many exceptions and develop...
-* update - call to compress and if error occured -> output is deleted

@@ -270,7 +270,8 @@ class FilesystemHandler:
     def compress(self, directories: list, subfolder: str = '', 
                  ignore_folders: list = [], ignore_files: list = [], 
                  ignore_extensions: list = [], 
-                 init_compression: bool = False) -> None:
+                 init_compression: bool = False, 
+                 remove_output: bool = True) -> None:
         """Compress files and directories recursively.
 
         Args:
@@ -284,6 +285,8 @@ class FilesystemHandler:
             to ignore. Defaults to [].
             init_compression (bool, optional): Whether it's the initial 
             compression operation. Defaults to False.
+            remove_output (bool, optional): Whether an error occured,
+            option to remove the output path. Defaults to True.
         """
         if init_compression:
             self.write_metadata()
@@ -322,7 +325,8 @@ class FilesystemHandler:
             else:
                 #TODO: what should happen?
                 self.close_output_file()
-                os.remove(self._output_file.name)
+                if remove_output:
+                    os.remove(self._output_file.name)
                 raise MissingInputPath(
                     f"Error - {full_dir_path} does not exist.")
 
@@ -587,7 +591,7 @@ class FilesystemHandler:
         if result == None:
             return False
         else:
-            self.compress(directories=input_paths)
+            self.compress(directories=input_paths, remove_output=False)
             return True
 
     def check_validation(self, archive_paths: str) -> dict:
