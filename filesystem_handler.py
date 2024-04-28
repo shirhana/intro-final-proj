@@ -1,7 +1,7 @@
 import os
 from data_compression import DataCompression
 from compression_types import CompressionTypes
-from typing import Tuple, Union
+from typing import Tuple
 from exceptions import *
 
 
@@ -46,7 +46,7 @@ class FilesystemHandler:
         write_file(self, file: str, data: str) -> None:
             Write data to a file.
 
-        compress_data_to_file(self, data: str) -> None:
+        compress_data_to_file(self, data: bytes) -> None:
             Compress data and write it to the output file.
 
         get_decompressed_data(self, compressed_data: bytes, index: int = 0) -> Tuple[bytes, int]:
@@ -172,11 +172,11 @@ class FilesystemHandler:
             with open(file, 'wb') as f:
                 f.write(data)
 
-    def compress_data_to_file(self, data: str) -> None:
+    def compress_data_to_file(self, data: bytes) -> None:
         """Compress data and write it to the output file.
 
         Args:
-            data (str): The data to compress and write.
+            data (bytes): The data to compress and write.
         """
         compressed_data = self._compression_algorithem.compress_data(
             data=data)
@@ -233,7 +233,7 @@ class FilesystemHandler:
             algo = CompressionTypes.LZ.value()
         
         else:
-            raise NotValidCompressionAlgorithem(
+            raise InvalidCompressionAlgorithem(
                 f'Invalid compression format!')
         
         self.set_compression_algorithem(compression_algorithem=algo)
@@ -266,6 +266,19 @@ class FilesystemHandler:
         metadata = compressed_data[index+self._bytes_length:next_index]
 
         return metadata, next_index
+    
+    def valid_for_compression(self, data):
+        special_signs = self._compression_algorithem.get_special_signs()
+        for sign in special_signs:
+            if sign in data:
+                return False
+            
+        return True
+    
+    def compress_with_error(self, should_remove_output):
+        self.close_output_file()
+        if should_remove_output:
+            os.remove(self._output_file.name)
 
     def compress(self, directories: list, subfolder: str = '', 
                  ignore_folders: list = [], ignore_files: list = [], 
@@ -313,20 +326,25 @@ class FilesystemHandler:
             elif os.path.isfile(full_dir_path):
             
                 if full_dir_path not in ignore_files and not full_dir_path.endswith(tuple(ignore_extensions)):
-                    # compress full file path name
-                    self.compress_data_to_file(data=full_dir_path.encode())
-
                     # read data from current file
                     full_file_data = self.read_file(file=full_dir_path)
-                    
-                    # compress file data
-                    self.compress_data_to_file(data=full_file_data)
+                    file_path = full_dir_path.encode()
+
+                    if self.valid_for_compression(data=full_file_data) \
+                        and self.valid_for_compression(data=file_path):
+                        # compress full file path name
+                        self.compress_data_to_file(data=file_path)
+                        # compress file data
+                        self.compress_data_to_file(data=full_file_data)
+                    else:
+                        self.compress_with_error(should_remove_output=remove_output)
+                        algo_name = self.get_compression_algorithem_name()
+                        aborted_msg = f"Could not compress {full_dir_path} "
+                        aborted_msg += f"using {algo_name}."
+                        raise InvalidDataForCompressionAlgorithem(aborted_msg)
 
             else:
-                #TODO: what should happen?
-                self.close_output_file()
-                if remove_output:
-                    os.remove(self._output_file.name)
+                self.compress_with_error(should_remove_output=remove_output)
                 raise MissingInputPath(
                     f"Error - {full_dir_path} does not exist.")
 

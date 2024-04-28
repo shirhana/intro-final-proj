@@ -350,3 +350,9 @@ class LempelZivCompression(DataCompression):
         metadata.extend(self.__class__.__name__.encode())
 
         return bytes(metadata)
+    
+    def get_special_signs(self):
+        special_signs = super().get_special_signs()
+        special_signs.append(self._last_data_bytes_sign)
+
+        return special_signs

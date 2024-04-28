@@ -61,3 +61,10 @@ class DataCompression(ABC):
             bytes: The metadata information.
         """
         pass
+
+
+    def get_special_signs(self) -> list:
+        special_signs = []
+        special_signs.append(self._bigger_than_max_bytes_sign)
+
+        return special_signs

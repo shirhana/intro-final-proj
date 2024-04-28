@@ -106,3 +106,4 @@ def test_some_files_compression_and_decompression():
 
     files_path.extend([output_file])
     clean(files=files_path)
+

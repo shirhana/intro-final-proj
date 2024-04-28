@@ -20,11 +20,12 @@ class RleCompression(DataCompression):
         compression.
     """
 
-    def __init__(self, bytes_size: int) -> None:
+    def __init__(self, bytes_size: int = 2) -> None:
         """Initialize the RleCompression class.
 
         Args:
             bytes_size (int): The size of bytes used for compression.
+            Default: 2
         """
         super().__init__()
         self._bytes_size = bytes_size

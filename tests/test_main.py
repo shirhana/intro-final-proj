@@ -190,7 +190,7 @@ def test_compress_and_decompress_big_files():
     test_folder = 'assets'
     playground_folder = 'playground'
     paths = [playground_folder]
-    os.makedirs(playground_folder)
+    os.makedirs(playground_folder, exist_ok=True)
     for member in CompressionTypes:
         compression_type = member.name.lower()
         output_path = f"output-{member.name}.bin"
@@ -217,4 +217,34 @@ def test_compress_and_decompress_big_files():
 
         assert original_data == compare_data
 
+    clean(paths=paths)
+
+
+
+@pytest.mark.parametrize("data", [
+    (b'***'), 
+    (b'*^&'),
+    (b'valid data')
+])
+def test_invalid_data_for_compression(data):
+    test_file = 'test.txt'
+    paths = [test_file]   
+    for member in CompressionTypes:
+        invalid_data = member.value().get_special_signs()
+        with open(test_file, 'wb') as f:
+            f.write(data)
+        compression_type = member.name.lower()
+        output_path = f"output-{member.name}.bin"
+        paths.append(output_path)
+
+        # COMPRESS
+        assert not os.path.isfile(output_path)
+        if data in invalid_data:
+            with pytest.raises(expected_exception=Exception, match=f"Could not compress {test_file} using"):
+                run(input_paths=[test_file], output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
+            assert not os.path.isfile(output_path)
+        else:
+            run(input_paths=[test_file], output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
+            assert os.path.isfile(output_path)
+        
     clean(paths=paths)
