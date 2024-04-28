@@ -55,20 +55,19 @@ class LempelZivCompression(DataCompression):
         if result[prev] >= self._max_bytes_range:
             compress_data.extend(self._bigger_than_max_bytes_sign)
             
-            a = int(result[prev] / self._max_bytes_range)
-            if a >= self._max_bytes_range:
+            original_a = int(result[prev] / self._max_bytes_range)
+            if original_a >= self._max_bytes_range:
                 compress_data.extend(self._bigger_than_max_bytes_sign)
                 
-                a = int(a / self._max_bytes_range)
-                b = a % self._max_bytes_range
+                a = int(original_a / self._max_bytes_range)
+                b = original_a % self._max_bytes_range
                 compress_data.append(a)
                 compress_data.append(b)
-                
             else:
-                compress_data.append(a)
+                compress_data.append(original_a)
             
-            b = result[prev] % self._max_bytes_range
-            compress_data.append(b)
+            c = result[prev] % self._max_bytes_range
+            compress_data.append(c)
         else:
             compress_data.append(result[prev])
 
@@ -115,7 +114,6 @@ class LempelZivCompression(DataCompression):
                 else:
                     self.compress_prev(result=result, prev=prev, compress_data=compress_data)
                     
-                byte_representation = self.get_byte_representation(c)
                 compress_data.extend(byte_representation)
                 prev = b""
                 index += 1 
@@ -173,11 +171,12 @@ class LempelZivCompression(DataCompression):
 
         codebook_index = self._max_bytes_range * a + b
         prev = self.get_key_by_val(d=codebook, value=codebook_index)
-        self.update_decompress_data(
-            decompress_data=decompress_data, prev=prev, 
-            extra_append=compressed_data[i])
+        
         byte_representation = self.get_byte_representation(
             n=compressed_data[i])
+        self.update_decompress_data(
+            decompress_data=decompress_data, prev=prev, 
+            extra_append=byte_representation)
         self.update_codebook(codebook, prev, byte_representation, index)
         i += 1
         return i
@@ -230,18 +229,19 @@ class LempelZivCompression(DataCompression):
         codebook[p] = index
 
     def update_decompress_data(self, decompress_data: bytearray, prev: bytes, 
-                               extra_append: bool = None) -> None:
+                               extra_append: bytes = None) -> None:
         """Updates the decompressed data during decompression.
 
         Args:
             decompress_data (bytearray): The decompressed data.
             prev (bytes): The previous sequence.
-            extra_append: Additional byte to append to the decompressed data.
+            extra_append (bytes): Additional byte to append to the 
+            decompressed data.
         """
         decompress_data.extend(prev)
 
         if extra_append is not None:
-            decompress_data.append(extra_append)
+            decompress_data.extend(extra_append)
 
     def decompress_end_of_data(self, compressed_data: bytes, codebook: dict, 
                                decompress_data: bytearray, i: int) -> None:
@@ -281,12 +281,12 @@ class LempelZivCompression(DataCompression):
             int: The updated index in the compressed data.
         """
         prev = self.get_key_by_val(d=codebook, value=codebook_index)
-        self.update_decompress_data(
-            decompress_data=decompress_data, prev=prev, 
-            extra_append=compressed_data[i+1])
 
         byte_representation = \
             self.get_byte_representation(n=compressed_data[i+1])
+        self.update_decompress_data(
+            decompress_data=decompress_data, prev=prev, 
+            extra_append=byte_representation)
         self.update_codebook(codebook, prev, byte_representation, index)
         i += 2
         return i
@@ -337,6 +337,7 @@ class LempelZivCompression(DataCompression):
                 )
             
             index += 1
+  
         return bytes(decompress_data)
     
     def get_metadata(self) -> bytes:
@@ -349,6 +350,3 @@ class LempelZivCompression(DataCompression):
         metadata.extend(self.__class__.__name__.encode())
 
         return bytes(metadata)
-
-
-

@@ -184,3 +184,37 @@ def test_decompress_to_specific_location():
         assert file in os.listdir(os.path.join(new_folder, input_paths[0]))
     input_paths.extend([output_path, new_folder])
     clean(input_paths)
+
+
+def test_compress_and_decompress_big_files():
+    test_folder = 'assets'
+    playground_folder = 'playground'
+    paths = [playground_folder]
+    os.makedirs(playground_folder)
+    for member in CompressionTypes:
+        compression_type = member.name.lower()
+        output_path = f"output-{member.name}.bin"
+        paths.append(output_path)
+
+        # COMPRESS
+        assert not os.path.isfile(output_path)
+        run(input_paths=[test_folder], output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
+        assert os.path.isfile(output_path)
+
+    # DECOMPRESS
+    run(input_paths=paths, output_path=playground_folder, action_type=ActionTypes.DECOMPRESS.value)
+
+    files = os.listdir(test_folder)
+
+    for file in files:
+
+        with open(os.path.join(test_folder, file), 'rb') as f:
+            original_data = f.read()
+
+        with open(os.path.join(playground_folder, test_folder, file), 'rb') as f:
+            compare_data = f.read()
+
+
+        assert original_data == compare_data
+
+    clean(paths=paths)

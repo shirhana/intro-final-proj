@@ -1,6 +1,5 @@
 * catch execptions
 
 
-* test huffman with very big files 
-* lz does not work with very big files 
+* test huffman with very big files  
 * design many exceptions and develop...
