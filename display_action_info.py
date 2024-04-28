@@ -2,6 +2,7 @@ import os
 import time
 from utility import print_colored, Colors
 from action_types import ActionTypes
+from typing import Union
 
 
 class DisplayActionInfo:
@@ -198,11 +199,11 @@ class DisplayActionInfo:
 
         return result
                 
-    def show(self, result: str | bool, compression_algorithem: str) -> None:
+    def show(self, result: Union[str, bool], compression_algorithem: str) -> None:
         """Show information related to the action.
 
         Args:
-            result (str|bool): Result or output of the action.
+            result Union[str, bool]: Result or output of the action.
             compression_algorithm (str): Name of the compression 
             algorithm used.
         """
@@ -229,7 +230,7 @@ class DisplayActionInfo:
         if success:
             self.display_elapsed_time()
 
-    def alert(self, error_msg: dict | str) -> bool:
+    def alert(self, error_msg: Union[str, dict]) -> bool:
         """Display alerts or error messages.
 
         Args:

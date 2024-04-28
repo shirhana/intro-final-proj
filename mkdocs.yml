@@ -100,8 +100,6 @@ plugins:
       enabled_if_env: ENABLE_PDF_EXPORT
   - minify:
       minify_html: true
-  - git-revision-date-localized:
-      type: datetime
 
 extra:
   social:

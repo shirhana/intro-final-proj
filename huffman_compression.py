@@ -303,7 +303,7 @@ class HuffmanCompression(DataCompression):
             current_code += bit
             if(current_code in self._reverse_mapping):
                 character = self._reverse_mapping[current_code]
-                b.extend(character.to_bytes(byteorder='little'))
+                b.extend(character.to_bytes(1, byteorder='little'))
                 current_code = ""
 
         return bytes(b)
