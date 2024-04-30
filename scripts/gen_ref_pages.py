@@ -16,7 +16,7 @@ for path in sorted(src.rglob("*.py")):
     full_doc_path = Path("reference", doc_path)
 
     parts = tuple(module_path.parts)
-    if parts[0] in ignore_folders:
+    if parts[0] in ignore_folders or 'lib' in parts:
         continue
 
     if parts[-1] == "__init__":

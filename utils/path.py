@@ -78,7 +78,7 @@ def human_readable_file_size(size: int) -> str:
     return "{:.4g} {}".format(size / (1 << (order * 10)), _suffixes[order])
 
 
-def process_files(directory_files: os._ScandirIterator[str], 
+def process_files(directory_files: List[Path], 
                   base_directory: str) -> List[Dict[str, object]]:
     """
     Process a list of directory files into a structured format.
