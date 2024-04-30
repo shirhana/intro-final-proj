@@ -20,6 +20,8 @@ class DataCompression(ABC):
         method for decompressing data.
         get_metadata() -> bytes: Abstract method for retrieving 
         metadata related to the compression.
+        get_special_signs() -> list: special signs for the 
+        compression algorithm.
     """ 
 
     def __init__(self) -> None:
@@ -64,6 +66,11 @@ class DataCompression(ABC):
 
 
     def get_special_signs(self) -> list:
+        """Get the special signs for the compression algorithm.
+
+        Returns:
+            list: A list of special signs, including the last data bytes sign.
+        """
         special_signs = []
         special_signs.append(self._bigger_than_max_bytes_sign)
 

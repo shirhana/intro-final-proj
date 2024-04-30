@@ -30,6 +30,7 @@ class LempelZivCompression(DataCompression):
         decompression.
         decompress_regular_data: Decompress regular data in the 
         decompression process.
+        get_special_signs: special signs for the compression algorithm.
         decompress_data: Decompress data using the Lempel-Ziv algorithm.
     """
 
@@ -351,7 +352,12 @@ class LempelZivCompression(DataCompression):
 
         return bytes(metadata)
     
-    def get_special_signs(self):
+    def get_special_signs(self) -> list:
+        """Get the special signs for the compression algorithm.
+
+        Returns:
+            list: A list of special signs, including the last data bytes sign.
+        """
         special_signs = super().get_special_signs()
         special_signs.append(self._last_data_bytes_sign)
 

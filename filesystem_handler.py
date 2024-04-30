@@ -55,6 +55,9 @@ class FilesystemHandler:
         define_compression_algorithem(self, algorithem_type: bytes) -> None:
             Define the compression algorithm based on metadata.
 
+        valid_for_compression(self, data: bytes) -> bool:
+            True if the data is valid for compression, False otherwise.
+
         write_metadata(self) -> None:
             Write metadata about the compression algorithm to the output file.
 
@@ -267,7 +270,15 @@ class FilesystemHandler:
 
         return metadata, next_index
     
-    def valid_for_compression(self, data):
+    def valid_for_compression(self, data: bytes) -> bool:
+        """Checks if the data is valid for compression based on special signs.
+
+        Args:
+            data (bytes): The data to be checked for special signs.
+
+        Returns:
+            bool: True if the data is valid for compression, False otherwise.
+        """
         special_signs = self._compression_algorithem.get_special_signs()
         for sign in special_signs:
             if sign in data:
