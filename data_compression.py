@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from exceptions import InvalidDataForCompressionAlgorithem
 
 class DataCompression(ABC):
     """DataCompression is an interface for data compression algorithms.
@@ -14,14 +14,12 @@ class DataCompression(ABC):
         data exceeding the maximum byte range.
 
     Methods:
-        compress_data(data: bytes) -> bytes: Abstract method for
-        compressing data.
-        decompress_data(compressed_data: bytes) -> bytes: Abstract
-        method for decompressing data.
-        get_metadata() -> bytes: Abstract method for retrieving
-        metadata related to the compression.
-        get_special_signs() -> list: special signs for the
-        compression algorithm.
+        compress_data(data: bytes): Abstract method for compressing data.
+        decompress_data(compressed_data: bytes): Abstract method for decompressing data.
+        get_metadata(): Abstract method for retrieving metadata related to the compression.
+        get_special_signs(): special signs for the compression algorithm.
+        valid_append_for_compression(compress_data: bytearray, extra_append: int): check if extra append for compression is valid.
+        valid_extend_for_compression(compress_data: bytearray, extra_append: int): check if extra extend for compression is valid.
     """
 
     def __init__(self) -> None:
@@ -72,3 +70,55 @@ class DataCompression(ABC):
         special_signs.append(self._bigger_than_max_bytes_sign)
 
         return special_signs
+    
+    def valid_append_for_compression(
+            self, compress_data: bytearray, extra_append: int) -> bool:
+        """
+        Checks if appending extra data is valid for compression.
+
+        Parameters:
+        - compress_data (bytearray): The data to be compressed.
+        - extra_append (int): The extra data to append.
+
+        Returns:
+        bool: True if the append operation is valid, False otherwise.
+
+        Raises:
+        InvalidDataForCompressionAlgorithem: If the data is invalid 
+        for compression.
+        """
+        special_signs = self.get_special_signs()
+        for sign in special_signs:
+            if len(compress_data) > 1 and compress_data[-2] == sign[0] \
+                and compress_data[-1] == sign[1] and extra_append == sign[2]:
+                raise InvalidDataForCompressionAlgorithem('Error')
+            
+        return True
+    
+    def valid_extend_for_compression(
+                self, compress_data: bytearray, extra_extend: bytes) -> bool:
+            """
+            Checks if extending data is valid for compression.
+
+            Parameters:
+            - compress_data (bytearray): The data to be compressed.
+            - extra_extend (bytes): The extra data to extend with.
+
+            Returns:
+            bool: True if the extend operation is valid, False otherwise.
+
+            Raises:
+            InvalidDataForCompressionAlgorithem: If the data is invalid 
+            for compression.
+            """
+            
+            special_signs = self.get_special_signs()
+            for sign in special_signs:
+                if (sign in extra_extend) or (len(compress_data) > 1 and \
+                    compress_data[-2] == sign[0] and \
+                        compress_data[-1] == sign[1] and \
+                            extra_extend[0] == sign[2]):
+                    raise InvalidDataForCompressionAlgorithem('Error')
+                
+            return True
+

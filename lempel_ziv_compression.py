@@ -42,7 +42,7 @@ class LempelZivCompression(DataCompression):
         sets the last data bytes sign.
         """
         super().__init__()
-        self._last_data_bytes_sign = b"***"
+        self._last_data_bytes_sign = b"!@#"
 
     def compress_prev(
         self, result: dict, prev: bytes, compress_data: bytearray
@@ -63,15 +63,25 @@ class LempelZivCompression(DataCompression):
 
                 a = int(original_a / self._max_bytes_range)
                 b = original_a % self._max_bytes_range
-                compress_data.append(a)
-                compress_data.append(b)
+                if self.valid_append_for_compression(
+                    compress_data=compress_data, extra_append=a):
+                    compress_data.append(a)
+                if self.valid_append_for_compression(
+                    compress_data=compress_data, extra_append=b):
+                    compress_data.append(b)
             else:
-                compress_data.append(original_a)
+                if self.valid_append_for_compression(
+                    compress_data=compress_data, extra_append=original_a):
+                    compress_data.append(original_a)
 
             c = result[prev] % self._max_bytes_range
-            compress_data.append(c)
+            if self.valid_append_for_compression(
+                    compress_data=compress_data, extra_append=c):
+                compress_data.append(c)
         else:
-            compress_data.append(result[prev])
+            if self.valid_append_for_compression(
+                    compress_data=compress_data, extra_append=result[prev]):
+                compress_data.append(result[prev])
 
     def get_byte_representation(self, n: int) -> bytes:
         """Converts an integer into its byte representation.
@@ -118,7 +128,9 @@ class LempelZivCompression(DataCompression):
                         result=result, prev=prev, compress_data=compress_data
                     )
 
-                compress_data.extend(byte_representation)
+                if self.valid_extend_for_compression(
+                    compress_data=compress_data, extra_extend=byte_representation):
+                    compress_data.extend(byte_representation)
                 prev = b""
                 index += 1
 
@@ -214,6 +226,7 @@ class LempelZivCompression(DataCompression):
             and compressed_data[i + 1] == self._last_data_bytes_sign[1]
             and compressed_data[i + 2] == self._last_data_bytes_sign[2]
         ):
+            
             return True
         return False
 
@@ -414,3 +427,4 @@ class LempelZivCompression(DataCompression):
         special_signs.append(self._last_data_bytes_sign)
 
         return special_signs
+

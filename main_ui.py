@@ -30,7 +30,7 @@ from utils.output import error, info, warn, success
 from action_types import ActionTypes
 from main import run
 
-VERSION = "0.0.0"
+VERSION = "1.0.0"
 PLAYGROUND = "playground-folder"
 
 

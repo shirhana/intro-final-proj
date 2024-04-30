@@ -186,43 +186,8 @@ def test_decompress_to_specific_location():
     clean(input_paths)
 
 
-def test_compress_and_decompress_big_files():
-    test_folder = 'assets'
-    playground_folder = 'playground'
-    paths = [playground_folder]
-    os.makedirs(playground_folder, exist_ok=True)
-    for member in CompressionTypes:
-        compression_type = member.name.lower()
-        output_path = f"output-{member.name}.bin"
-        paths.append(output_path)
-
-        # COMPRESS
-        assert not os.path.isfile(output_path)
-        run(input_paths=[test_folder], output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
-        assert os.path.isfile(output_path)
-
-    # DECOMPRESS
-    run(input_paths=paths, output_path=playground_folder, action_type=ActionTypes.DECOMPRESS.value)
-
-    files = os.listdir(test_folder)
-
-    for file in files:
-
-        with open(os.path.join(test_folder, file), 'rb') as f:
-            original_data = f.read()
-
-        with open(os.path.join(playground_folder, test_folder, file), 'rb') as f:
-            compare_data = f.read()
-
-
-        assert original_data == compare_data
-
-    clean(paths=paths)
-
-
-
 @pytest.mark.parametrize("data", [
-    (b'***'), 
+    (b'!@#'), 
     (b'*^&'),
     (b'valid data')
 ])
@@ -248,3 +213,44 @@ def test_invalid_data_for_compression(data):
             assert os.path.isfile(output_path)
         
     clean(paths=paths)
+
+
+@pytest.mark.parametrize("compression_algo", [
+    (CompressionTypes.RLE.name), 
+    (CompressionTypes.LZ.name),
+    (CompressionTypes.HUFFMAN.name)
+])
+def test_compress_and_decompress_big_files(compression_algo):
+    test_folder = 'assets'
+    playground_folder = 'playground'
+    paths = [playground_folder]
+    os.makedirs(playground_folder, exist_ok=True)
+    compression_type = compression_algo.lower()
+    output_path = f"output-compression_algo.bin"
+    paths.append(output_path)
+
+    # COMPRESS
+    assert not os.path.isfile(output_path)
+    run(input_paths=[test_folder], output_path=output_path, action_type=ActionTypes.COMPRESS.value, compression_type=compression_type)
+    assert os.path.isfile(output_path)
+
+    # DECOMPRESS
+    run(input_paths=paths, output_path=playground_folder, action_type=ActionTypes.DECOMPRESS.value)
+
+    files = os.listdir(test_folder)
+
+    for file in files:
+
+        with open(os.path.join(test_folder, file), 'rb') as f:
+            original_data = f.read()
+
+        with open(os.path.join(playground_folder, test_folder, file), 'rb') as f:
+            compare_data = f.read()
+
+
+        assert original_data == compare_data
+
+    clean(paths=paths)
+
+
+

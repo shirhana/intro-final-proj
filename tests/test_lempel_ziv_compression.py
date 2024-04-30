@@ -3,7 +3,7 @@ from lempel_ziv_compression import *
 
 
 @pytest.mark.parametrize("bytes_input, result", [
-    (b"WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW", b'\x00W\x01W\x02W\x03W\x02B\x04W\x06W\x01B\x00B\tW\x07W\x0bW\x0cB\x0cW***\x06'),
+    (b"WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW", b'\x00W\x01W\x02W\x03W\x02B\x04W\x06W\x01B\x00B\tW\x07W\x0bW\x0cB\x0cW!@#\x06'),
     (b"ABCSDDDDDD", b'\x00A\x00B\x00C\x00S\x00D\x05D\x06D'),
     (b"1", b'\x001'), 
     (b"12", b'\x001\x002'),
@@ -16,7 +16,7 @@ def test_compress(bytes_input, result):
 
 
 @pytest.mark.parametrize("result, compressed_data", [
-    (b"WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW", b'\x00W\x01W\x02W\x03W\x02B\x04W\x06W\x01B\x00B\tW\x07W\x0bW\x0cB\x0cW***\x06'),
+    (b"WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW", b'\x00W\x01W\x02W\x03W\x02B\x04W\x06W\x01B\x00B\tW\x07W\x0bW\x0cB\x0cW!@#\x06'),
     (b"ABCSDDDDDD", b'\x00A\x00B\x00C\x00S\x00D\x05D\x06D'),
     (b"1", b'\x001'), 
     (b"12", b'\x001\x002'),

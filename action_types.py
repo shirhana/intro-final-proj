@@ -9,16 +9,11 @@ class ActionTypes(Enum):
     Attributes:
         COMPRESS (str): Represents the action to compress data.
         DECOMPRESS (str): Represents the action to decompress data.
-        ADD_TO_ARCHIVE (str): Represents the action to add data to
-        an archive.
-        UPDATE_ARCHIVE (str): Represents the action to update data
-        in an archive.
-        REMOVE_FROM_ARCHIVE (str): Represents the action to remove
-        data from an archive.
-        VIEW_ARCHIVE (str): Represents the action to view data in
-        an archive.
-        CHECK_VALIDATION (str): Represents the action to check the
-        validity of an archive.
+        ADD_TO_ARCHIVE (str): Represents the action to add data to an archive.
+        UPDATE_ARCHIVE (str): Represents the action to update data in an archive.
+        REMOVE_FROM_ARCHIVE (str): Represents the action to remove data from an archive.
+        VIEW_ARCHIVE (str): Represents the action to view data in an archive.
+        CHECK_VALIDATION (str): Represents the action to check the validity of an archive.
     """
 
     COMPRESS = "compress"

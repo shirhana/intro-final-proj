@@ -36,6 +36,52 @@ def run(
     """
     validate_args(output_path=output_path, action_type=action_type)
 
+    handler = define_handler(action_type=action_type, bytes_size=bytes_size)
+
+    display_info = DisplayActionInfo(action_type=action_type,
+        input_paths=input_paths, output_path=output_path)
+    result = ""
+    valid = True
+
+    if action_type == ActionTypes.COMPRESS.value:
+        handle_compress_action(handler=handler, input_paths=input_paths, 
+        output_path=output_path, ignore_folders=ignore_folders, 
+        ignore_files=ignore_files, ignore_extensions=ignore_extensions)
+
+    elif action_type == ActionTypes.DECOMPRESS.value:
+        error_msg = handler.decompress_files(
+            directories=input_paths, output_path=output_path)
+        valid = display_info.alert(error_msg)
+
+    elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
+        result = handler.remove_from_archive(
+            input_paths=input_paths, archive_path=output_path)
+
+    elif (
+        action_type == ActionTypes.UPDATE_ARCHIVE.value
+        or action_type == ActionTypes.ADD_TO_ARCHIVE.value
+    ):
+        handler.open_output_file(output_file_path=output_path)
+        result = handler.update_archive(
+            input_paths=input_paths, archive_path=output_path)
+        handler.close_output_file()
+
+    elif action_type == ActionTypes.VIEW_ARCHIVE.value:
+        error_msg = handler.decompress_files(
+            directories=input_paths, view_mode=True)
+        valid = display_info.alert(error_msg)
+
+    elif action_type == ActionTypes.CHECK_VALIDATION.value:
+        result = handler.check_validation(archive_paths=input_paths)
+        display_info.alert(result)
+
+    if valid:
+        display_info.show(
+            result=result,
+            compression_algorithem=handler.get_compression_algorithem_name())
+
+
+def define_handler(compression_type, bytes_size):
     if compression_type == CompressionTypes.RLE.name.lower():
         compression_algorithem = CompressionTypes.RLE.value(
             bytes_size=bytes_size
@@ -53,64 +99,21 @@ def run(
         data_compression_algorithem=compression_algorithem
     )
 
-    display_info = DisplayActionInfo(
-        action_type=action_type,
-        input_paths=input_paths,
-        output_path=output_path,
-    )
-    result = ""
-    valid = True
+    return handler
 
-    if action_type == ActionTypes.COMPRESS.value:
-        if os.path.isfile(output_path):
-            os.remove(output_path)
 
-        handler.open_output_file(output_file_path=output_path)
-        handler.compress(
-            directories=input_paths,
-            ignore_folders=ignore_folders,
-            ignore_extensions=ignore_extensions,
-            ignore_files=ignore_files,
-            init_compression=True,
-        )
-        handler.close_output_file()
+def handle_compress_action(
+        handler, input_paths, output_path, ignore_folders, 
+        ignore_files, ignore_extensions) -> None:
+    if os.path.isfile(output_path):
+        os.remove(output_path)
 
-    elif action_type == ActionTypes.DECOMPRESS.value:
-        error_msg = handler.decompress_files(
-            directories=input_paths, output_path=output_path
-        )
-        valid = display_info.alert(error_msg)
-
-    elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
-        result = handler.remove_from_archive(
-            input_paths=input_paths, archive_path=output_path
-        )
-
-    elif (
-        action_type == ActionTypes.UPDATE_ARCHIVE.value
-        or action_type == ActionTypes.ADD_TO_ARCHIVE.value
-    ):
-        handler.open_output_file(output_file_path=output_path)
-        result = handler.update_archive(
-            input_paths=input_paths, archive_path=output_path
-        )
-        handler.close_output_file()
-
-    elif action_type == ActionTypes.VIEW_ARCHIVE.value:
-        error_msg = handler.decompress_files(
-            directories=input_paths, view_mode=True
-        )
-        valid = display_info.alert(error_msg)
-
-    elif action_type == ActionTypes.CHECK_VALIDATION.value:
-        result = handler.check_validation(archive_paths=input_paths)
-        display_info.alert(result)
-
-    if valid:
-        display_info.show(
-            result=result,
-            compression_algorithem=handler.get_compression_algorithem_name(),
-        )
+    handler.open_output_file(output_file_path=output_path)
+    handler.compress(
+        directories=input_paths,ignore_folders=ignore_folders,
+        ignore_extensions=ignore_extensions,ignore_files=ignore_files,
+        init_compression=True,)
+    handler.close_output_file()
 
 
 def validate_args(output_path: str, action_type: str) -> None:

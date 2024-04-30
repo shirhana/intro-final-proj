@@ -294,10 +294,48 @@ class FilesystemHandler:
 
         return True
 
-    def compress_with_error(self, should_remove_output):
+    def compress_with_error(
+            self, should_remove_output, exception_type: Exception = Exception, 
+            aborted_msg: str = '', full_dir_path: str = '') -> None:
+        """
+        Handles compression errors and raises exceptions.
+
+        Parameters:
+        - should_remove_output (bool): Whether to remove the output file 
+        if an error occurs.
+        - exception_type (Exception): The type of exception to raise 
+        (default: Exception).
+        - aborted_msg (str): The error message to use if no message
+          is provided (default: '').
+        - full_dir_path (str): The full directory path related to the 
+        compression operation (default: '').
+
+        Raises:
+        InvalidDataForCompressionAlgorithem: If the compression operation 
+        fails.
+        Exception: If a specific exception type is provided and the 
+        operation fails.
+
+        Notes:
+        - If should_remove_output is True, the output file will be 
+        removed if an error occurs.
+        - If aborted_msg is not provided, a default error message 
+        will be generated.
+        - If exception_type is provided, that specific exception will 
+        be raised; otherwise, a generic Exception will be raised.
+        """
         self.close_output_file()
         if should_remove_output:
             os.remove(self._output_file.name)
+
+        if aborted_msg == '':
+            algo_name = self.get_compression_algorithem_name()
+            aborted_msg = f"Could not compress {full_dir_path} "
+            aborted_msg += f"using {algo_name}."
+            raise InvalidDataForCompressionAlgorithem(aborted_msg)
+        
+        else:
+            raise exception_type(aborted_msg)
 
     def compress(
         self,
@@ -367,24 +405,28 @@ class FilesystemHandler:
                     if self.valid_for_compression(
                         data=full_file_data
                     ) and self.valid_for_compression(data=file_path):
-                        # compress full file path name
-                        self.compress_data_to_file(data=file_path)
-                        # compress file data
-                        self.compress_data_to_file(data=full_file_data)
+                        try: 
+                            # compress full file path name
+                            self.compress_data_to_file(data=file_path)
+                            # compress file data
+                            self.compress_data_to_file(data=full_file_data)
+                        except Exception:
+                            self.compress_with_error(
+                            should_remove_output=remove_output,
+                            full_dir_path=full_dir_path
+                        )
                     else:
                         self.compress_with_error(
-                            should_remove_output=remove_output
-                        )
-                        algo_name = self.get_compression_algorithem_name()
-                        aborted_msg = f"Could not compress {full_dir_path} "
-                        aborted_msg += f"using {algo_name}."
-                        raise InvalidDataForCompressionAlgorithem(aborted_msg)
+                            should_remove_output=remove_output,
+                            full_dir_path=full_dir_path
+                        ) 
 
             else:
-                self.compress_with_error(should_remove_output=remove_output)
-                raise MissingInputPath(
-                    f"Error - {full_dir_path} does not exist."
-                )
+                self.compress_with_error(
+                    should_remove_output=remove_output, 
+                    exception_type=MissingInputPath,
+                    aborted_msg=f"Error - {full_dir_path} does not exist."
+                    )
 
     def should_stop(
         self, compressed_file_path: str = "", compressed_data: bytes = b""
@@ -697,3 +739,6 @@ class FilesystemHandler:
         return self.decompress_files(
             directories=archive_paths, debug_mode=True
         )
+
+
+

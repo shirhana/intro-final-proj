@@ -23,29 +23,19 @@ class HuffmanCompression(DataCompression):
         make_heap(frequency: dict): Creates a heap from the frequency
         dictionary.
         merge_nodes(): Merges nodes in the heap to build the Huffman tree.
-        make_codes_helper(root, current_code): Helper function to generate
-        Huffman codes.
-        make_codes(): Generates Huffman codes for characters in the input
-        text.
-        get_encoded_text(text: str) -> str: Encodes the input text using
-        Huffman codes.
-        pad_encoded_text(encoded_text: str) -> str: Pads the encoded text
-        to ensure byte alignment.
-        get_byte_array(padded_encoded_text: str) -> bytearray: Converts padded
-        encoded text to byte array.
-        compress_data(data) -> bytes: Compresses input data using Huffman
-        coding.
-        remove_padding(padded_encoded_text: str) -> str: Removes padding
-        from encoded text.
-        decode_data(encoded_text: str, huffman_table: dict) -> bytes: Decodes
-        Huffman encoded text.
-        decompress_data(compressed_data: bytes) -> bytes: Decompresses data
-        compressed with Huffman coding.
-        get_metadata() -> bytes: Retrieves metadata related to Huffman
-        compression.
+        make_codes_helper(root, current_code): Helper function to generate Huffman codes.
+        make_codes(): Generates Huffman codes for characters in the input text.
+        get_encoded_text(text: str) -> str: Encodes the input text using Huffman codes.
+        pad_encoded_text(encoded_text: str) -> str: Pads the encoded text to ensure byte alignment.
+        get_byte_array(padded_encoded_text: str) -> bytearray: Converts padded encoded text to byte array.
+        compress_data(data) -> bytes: Compresses input data using Huffman coding.
+        remove_padding(padded_encoded_text: str) -> str: Removes padding from encoded text.
+        decode_data(encoded_text: str, huffman_table: dict) -> bytes: Decodes Huffman encoded text.
+        decompress_data(compressed_data: bytes) -> bytes: Decompresses data compressed with Huffman coding.
+        get_metadata() -> bytes: Retrieves metadata related to Huffman compression.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the HuffmanCompression class."""
         super().__init__()
         self._heap = []
@@ -77,7 +67,7 @@ class HuffmanCompression(DataCompression):
             self._left = None
             self._right = None
 
-        def __lt__(self, other):
+        def __lt__(self, other) -> bool:
             """Compares HeapNodes based on frequency.
 
             Args:
@@ -89,7 +79,7 @@ class HuffmanCompression(DataCompression):
             """
             return self._freq < other._freq
 
-        def __eq__(self, other):
+        def __eq__(self, other) -> bool:
             """Checks equality between HeapNodes based on frequency.
 
             Args:
