@@ -25,43 +25,24 @@ def get_compress_string() -> str:
   """Returns the ASCII art for compression.
   """
   return r"""
-    ____       ____       __  __      _____       _____       ______       _____       _____      _______
-   / ___|     / __ \     |  \/  |    |  __ \     |  __ \     |  ____|     / ____|     / ____|     \     /
-   | |       | |  | |    | \  / |    | |__) |    | |__) |    | |__       | |         | |           \   /
-   | |       | |  | |    | |\/| |    |  ___/     |  _  /     |  __|       \____ \     \____ \       \ /
-   | |___    | |__| |    | |  | |    | |         | | \ \     | |____       ____| |     ____| |       
-   \____|     \____/     |_|  |_|    |_|         |_|  \_\    |______|     |_____/     |_____/        o
-
-  """
-
-def get_decompress_string() -> str:
-  """Returns the ASCII art for decompression.
-  """
-  return r"""
-     ____       ______      ____       ____       __  __      _____       _____       ______       _____       _____      _______
-    |  _ \     |  ____|    / ___|     / __ \     |  \/  |    |  __ \     |  __ \     |  ____|     / ____|     / ____|     \     /
-    | | | |    | |         | |       | |  | |    | \  / |    | |__) |    | |__) |    | |__       | |         | |           \   /
-    | | | |    |  __|      | |       | |  | |    | |\/| |    |  ___/     |  _  /     |  __|       \____ \     \____ \       \ /
-    | |_| |    | |____     | |___    | |__| |    | |  | |    | |         | | \ \     | |____       ____| |     ____| |       
-    |____/     |______|    \____|     \____/     |_|  |_|    |_|         |_|  \_\    |______|     |_____/     |_____/        o
+    ____       ____       __  __      _____       _____       ______       _____       _____       _______      __         ___   ___     _______
+   / ___|     / __ \     |  \/  |    |  __ \     |  __ \     |  ____|     / ____|     / ____|     |  _____|    |  |        \  \ /  /     \     /
+   | |       | |  | |    | \  / |    | |__) |    | |__) |    | |__       | |         | |          |  |__       |  |         \  V  /       \   /
+   | |       | |  | |    | |\/| |    |  ___/     |  _  /     |  __|       \____ \     \____ \     |  ___|      |  |          \   /         \ /
+   | |___    | |__| |    | |  | |    | |         | | \ \     | |____       ____| |     ____| |    | |          |  |____       | |
+   \____|     \____/     |_|  |_|    |_|         |_|  \_\    |______|     |_____/     |_____/     |_|          |_______|      |_|           o
 
   """
 
 
-def create_cefd_banner(action_type: str) -> str:
-  """Creates a colored banner based on the action type.
-
-    Args:
-        action_type (str): The type of action, 
-        either 'compress' or 'decompress'.
+def create_cefd_banner() -> str:
+  """Creates a colored banner.
 
     Returns:
         str: A colored banner representing the action type.
     """
-  if action_type == 'decompress':
-     banner = get_decompress_string()
-  else:
-    banner = get_compress_string()
+  
+  banner = get_compress_string()
 
   reset = "\033[0m"
   res = ''

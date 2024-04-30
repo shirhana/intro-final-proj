@@ -194,7 +194,7 @@ if "__main__" == __name__:
 
     # Parse the command-line arguments
     args = parser.parse_args()
-    print(create_cefd_banner(action_type=args.action_type))
+    print(create_cefd_banner())
     run(
         input_paths=args.input_paths_list, 
         output_path=args.output_path, 
