@@ -4,50 +4,49 @@ from data_compression import DataCompression
 
 
 class HuffmanCompression(DataCompression):
-    """HuffmanCompression is a class that implements Huffman coding 
+    """HuffmanCompression is a class that implements Huffman coding
     for data compression.
 
     Args:
-        DataCompression (class): The base class for data compression 
+        DataCompression (class): The base class for data compression
         algorithms.
 
     Attributes:
         _heap (list): The heap used for building the Huffman tree.
         _codes (dict): A dictionary mapping characters to Huffman codes.
-        _reverse_mapping (dict): A dictionary mapping Huffman codes to 
+        _reverse_mapping (dict): A dictionary mapping Huffman codes to
         characters.
 
     Methods:
-        make_frequency_dict(text: str) -> dict: Creates a frequency dictionary 
+        make_frequency_dict(text: str) -> dict: Creates a frequency dictionary
         for characters in the input text.
-        make_heap(frequency: dict): Creates a heap from the frequency 
+        make_heap(frequency: dict): Creates a heap from the frequency
         dictionary.
         merge_nodes(): Merges nodes in the heap to build the Huffman tree.
-        make_codes_helper(root, current_code): Helper function to generate 
+        make_codes_helper(root, current_code): Helper function to generate
         Huffman codes.
         make_codes(): Generates Huffman codes for characters in the input
         text.
         get_encoded_text(text: str) -> str: Encodes the input text using
         Huffman codes.
-        pad_encoded_text(encoded_text: str) -> str: Pads the encoded text 
+        pad_encoded_text(encoded_text: str) -> str: Pads the encoded text
         to ensure byte alignment.
         get_byte_array(padded_encoded_text: str) -> bytearray: Converts padded
         encoded text to byte array.
         compress_data(data) -> bytes: Compresses input data using Huffman
         coding.
-        remove_padding(padded_encoded_text: str) -> str: Removes padding 
+        remove_padding(padded_encoded_text: str) -> str: Removes padding
         from encoded text.
-        decode_data(encoded_text: str, huffman_table: dict) -> bytes: Decodes 
+        decode_data(encoded_text: str, huffman_table: dict) -> bytes: Decodes
         Huffman encoded text.
-        decompress_data(compressed_data: bytes) -> bytes: Decompresses data 
+        decompress_data(compressed_data: bytes) -> bytes: Decompresses data
         compressed with Huffman coding.
-        get_metadata() -> bytes: Retrieves metadata related to Huffman 
+        get_metadata() -> bytes: Retrieves metadata related to Huffman
         compression.
     """
 
     def __init__(self):
-        """Initialize the HuffmanCompression class.
-        """
+        """Initialize the HuffmanCompression class."""
         super().__init__()
         self._heap = []
         self._codes = {}
@@ -62,9 +61,10 @@ class HuffmanCompression(DataCompression):
 
         Methods:
             __lt__(self, other): Compares HeapNodes based on frequency.
-            __eq__(self, other): Checks equality between HeapNodes 
+            __eq__(self, other): Checks equality between HeapNodes
             based on frequency.
         """
+
         def __init__(self, char: str, freq: int) -> None:
             """Initialize a HeapNode with a character and its frequency.
 
@@ -84,7 +84,7 @@ class HuffmanCompression(DataCompression):
                 other (HeapNode): The other HeapNode to compare.
 
             Returns:
-                bool: True if the current node has a lower frequency than 
+                bool: True if the current node has a lower frequency than
                 the other node.
             """
             return self._freq < other._freq
@@ -98,9 +98,9 @@ class HuffmanCompression(DataCompression):
             Returns:
                 bool: True if the frequencies of both nodes are equal.
             """
-            if(other == None):
+            if other == None:
                 return False
-            if(not isinstance(other, self.HeapNode)):
+            if not isinstance(other, self.HeapNode):
                 return False
             return self._freq == other._freq
 
@@ -124,7 +124,7 @@ class HuffmanCompression(DataCompression):
         """Creates a heap from the frequency dictionary.
 
         Args:
-            frequency (dict): A dictionary mapping characters 
+            frequency (dict): A dictionary mapping characters
             to their frequencies.
         """
         for key in frequency:
@@ -132,8 +132,7 @@ class HuffmanCompression(DataCompression):
             heapq.heappush(self._heap, node)
 
     def merge_nodes(self) -> None:
-        """Merges nodes in the heap to build the Huffman tree.
-        """
+        """Merges nodes in the heap to build the Huffman tree."""
         if len(self._heap) == 1:
             node1 = heapq.heappop(self._heap)
             merged = self.HeapNode(None, node1._freq)
@@ -141,7 +140,7 @@ class HuffmanCompression(DataCompression):
 
             heapq.heappush(self._heap, merged)
 
-        while(len(self._heap) > 1):
+        while len(self._heap) > 1:
             node1 = heapq.heappop(self._heap)
             node2 = heapq.heappop(self._heap)
 
@@ -158,10 +157,10 @@ class HuffmanCompression(DataCompression):
             root: The root of the Huffman tree.
             current_code (str): The current Huffman code being generated.
         """
-        if(root == None):
+        if root == None:
             return
 
-        if(root._char is not None):
+        if root._char is not None:
             self._codes[root._char] = current_code
             self._reverse_mapping[current_code] = root._char
             return
@@ -171,8 +170,7 @@ class HuffmanCompression(DataCompression):
             self.make_codes_helper(root._right, current_code + "1")
 
     def make_codes(self) -> None:
-        """Generates Huffman codes for characters in the input text.
-        """
+        """Generates Huffman codes for characters in the input text."""
         try:
             root = heapq.heappop(self._heap)
             current_code = ""
@@ -220,13 +218,13 @@ class HuffmanCompression(DataCompression):
         Returns:
             bytearray: The byte array representation of the encoded text.
         """
-        if(len(padded_encoded_text) % 8 != 0):
+        if len(padded_encoded_text) % 8 != 0:
             print("Encoded text not padded properly")
             exit(0)
 
         b = bytearray()
         for i in range(0, len(padded_encoded_text), 8):
-            byte = padded_encoded_text[i:i + 8]
+            byte = padded_encoded_text[i : i + 8]
             b.append(int(byte, 2))
         return b
 
@@ -256,8 +254,8 @@ class HuffmanCompression(DataCompression):
             a = huffman_table_len // self._max_bytes_range
             b = huffman_table_len % self._max_bytes_range
             compress_data.extend(self._bigger_than_max_bytes_sign)
-            compress_data.extend(a.to_bytes(1, byteorder='big'))
-            compress_data.extend(b.to_bytes(1, byteorder='big'))
+            compress_data.extend(a.to_bytes(1, byteorder="big"))
+            compress_data.extend(b.to_bytes(1, byteorder="big"))
         else:
             compress_data.append(huffman_table_len)
         compress_data.extend(json.dumps(self._reverse_mapping).encode())
@@ -278,12 +276,13 @@ class HuffmanCompression(DataCompression):
         extra_padding = int(padded_info, 2)
 
         padded_encoded_text = padded_encoded_text[8:]
-        encoded_text = padded_encoded_text[:-1 * extra_padding]
+        encoded_text = padded_encoded_text[: -1 * extra_padding]
 
         return encoded_text
 
-    def decode_data(self, encoded_text: str, 
-                    huffman_table: dict = {}) -> bytes:
+    def decode_data(
+        self, encoded_text: str, huffman_table: dict = {}
+    ) -> bytes:
         """Decodes the encoded text using the provided Huffman table.
 
         Args:
@@ -301,9 +300,9 @@ class HuffmanCompression(DataCompression):
 
         for bit in encoded_text:
             current_code += bit
-            if(current_code in self._reverse_mapping):
+            if current_code in self._reverse_mapping:
                 character = self._reverse_mapping[current_code]
-                b.extend(character.to_bytes(1, byteorder='little'))
+                b.extend(character.to_bytes(1, byteorder="little"))
                 current_code = ""
 
         return bytes(b)
@@ -317,36 +316,42 @@ class HuffmanCompression(DataCompression):
         Returns:
             bytes: The decompressed data.
         """
-        if compressed_data[0] == self._bigger_than_max_bytes_sign[0] \
-            and compressed_data[1] == self._bigger_than_max_bytes_sign[1] \
-                and compressed_data[2] == self._bigger_than_max_bytes_sign[2]:
+        if (
+            compressed_data[0] == self._bigger_than_max_bytes_sign[0]
+            and compressed_data[1] == self._bigger_than_max_bytes_sign[1]
+            and compressed_data[2] == self._bigger_than_max_bytes_sign[2]
+        ):
             start_index = 5
-            huffman_table_len = self._max_bytes_range * compressed_data[3] \
-                + compressed_data[4] + 4
+            huffman_table_len = (
+                self._max_bytes_range * compressed_data[3]
+                + compressed_data[4]
+                + 4
+            )
         else:
             start_index = 1
             huffman_table_len = compressed_data[0]
 
         hufffman_table = json.loads(
-            compressed_data[start_index:huffman_table_len + 1].decode())
+            compressed_data[start_index : huffman_table_len + 1].decode()
+        )
 
         bit_string = ""
         i = huffman_table_len + 1
 
         while i < len(compressed_data):
             byte = compressed_data[i]
-            bits = bin(byte)[2:].rjust(8, '0')
+            bits = bin(byte)[2:].rjust(8, "0")
             bit_string += bits
             i += 1
 
         encoded_data = self.remove_padding(bit_string)
-        decompressed_data = self.decode_data(encoded_text=encoded_data, 
-                                             huffman_table=hufffman_table)
+        decompressed_data = self.decode_data(
+            encoded_text=encoded_data, huffman_table=hufffman_table
+        )
         return decompressed_data
 
-
     def get_metadata(self) -> bytes:
-        """Gets metadata information about the huffman compression 
+        """Gets metadata information about the huffman compression
         algorithm.
 
         Returns:
@@ -356,4 +361,3 @@ class HuffmanCompression(DataCompression):
         metadata.extend(self.__class__.__name__.encode())
 
         return bytes(metadata)
-    

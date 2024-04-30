@@ -2,8 +2,8 @@ import random
 
 
 class Colors:
-    """Enumeration class for color names.
-    """
+    """Enumeration class for color names."""
+
     red = "red"
     green = "green"
     yellow = "yellow"
@@ -13,18 +13,18 @@ class Colors:
 
 
 colors = {
-        "red": "\033[91m",
-        "green": "\033[92m",
-        "yellow": "\033[93m",
-        "blue": "\033[94m",
-        "purple": "\033[95m",
-        "cyan": "\033[96m",
-    }
+    "red": "\033[91m",
+    "green": "\033[92m",
+    "yellow": "\033[93m",
+    "blue": "\033[94m",
+    "purple": "\033[95m",
+    "cyan": "\033[96m",
+}
+
 
 def get_compress_string() -> str:
-  """Returns the ASCII art for compression.
-  """
-  return r"""
+    """Returns the ASCII art for compression."""
+    return r"""
     ____       ____       __  __      _____       _____       ______       _____       _____       _______      __         ___   ___     _______
    / ___|     / __ \     |  \/  |    |  __ \     |  __ \     |  ____|     / ____|     / ____|     |  _____|    |  |        \  \ /  /     \     /
    | |       | |  | |    | \  / |    | |__) |    | |__) |    | |__       | |         | |          |  |__       |  |         \  V  /       \   /
@@ -36,23 +36,23 @@ def get_compress_string() -> str:
 
 
 def create_cefd_banner() -> str:
-  """Creates a colored banner.
+    """Creates a colored banner.
 
     Returns:
         str: A colored banner representing the action type.
     """
-  
-  banner = get_compress_string()
 
-  reset = "\033[0m"
-  res = ''
-  avail_colors = [each for each in colors.keys()]
-  for each in banner:
-    if each!=' ':
-        res+=f'{colors[random.choice(avail_colors)]}{each}{reset}'
-    else:
-        res+=' '
-  return res
+    banner = get_compress_string()
+
+    reset = "\033[0m"
+    res = ""
+    avail_colors = [each for each in colors.keys()]
+    for each in banner:
+        if each != " ":
+            res += f"{colors[random.choice(avail_colors)]}{each}{reset}"
+        else:
+            res += " "
+    return res
 
 
 def print_colored(text: str, color: str) -> str:

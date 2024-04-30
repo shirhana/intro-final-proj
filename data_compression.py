@@ -8,29 +8,27 @@ class DataCompression(ABC):
         ABC: A metaclass for defining abstract base classes.
 
     Attributes:
-        _max_bytes_range (int): The maximum range of bytes supported by 
+        _max_bytes_range (int): The maximum range of bytes supported by
         the compression algorithm.
         _bigger_than_max_bytes_sign (bytes): A special sign used to indicate
         data exceeding the maximum byte range.
 
     Methods:
-        compress_data(data: bytes) -> bytes: Abstract method for 
+        compress_data(data: bytes) -> bytes: Abstract method for
         compressing data.
-        decompress_data(compressed_data: bytes) -> bytes: Abstract 
+        decompress_data(compressed_data: bytes) -> bytes: Abstract
         method for decompressing data.
-        get_metadata() -> bytes: Abstract method for retrieving 
+        get_metadata() -> bytes: Abstract method for retrieving
         metadata related to the compression.
-        get_special_signs() -> list: special signs for the 
+        get_special_signs() -> list: special signs for the
         compression algorithm.
-    """ 
+    """
 
     def __init__(self) -> None:
-        """Initialize the DataCompression interface.
-        """        
+        """Initialize the DataCompression interface."""
         self._max_bytes_range = 256
-        self._bigger_than_max_bytes_sign = b'*^&'
+        self._bigger_than_max_bytes_sign = b"*^&"
 
-    
     @abstractmethod
     def compress_data(data: bytes) -> bytes:
         """Compresses input data.
@@ -63,7 +61,6 @@ class DataCompression(ABC):
             bytes: The metadata information.
         """
         pass
-
 
     def get_special_signs(self) -> list:
         """Get the special signs for the compression algorithm.
