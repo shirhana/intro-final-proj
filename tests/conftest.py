@@ -23,8 +23,7 @@ def clean():
             print(f"Removed file: {file}")
 
 
-
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture
 def setup_before_tests():
     # Code to run before all tests
     print("Setting up before running tests")

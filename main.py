@@ -1,5 +1,6 @@
 import os
 import argparse
+from func_timeout import func_timeout, FunctionTimedOut
 from utility import create_cefd_banner
 from filesystem_handler import FilesystemHandler
 from display_action_info import DisplayActionInfo
@@ -16,6 +17,7 @@ def run(
     ignore_files: list = [],
     ignore_folders: list = [],
     ignore_extensions: list = [],
+    timeout_seconds: int = 300,
 ) -> None:
     """Run the specified action with compression and decompression options.
 
@@ -36,7 +38,8 @@ def run(
     """
     validate_args(output_path=output_path, action_type=action_type)
 
-    handler = define_handler(action_type=action_type, bytes_size=bytes_size)
+    handler = define_handler(
+        compression_type=compression_type, bytes_size=bytes_size)
 
     display_info = DisplayActionInfo(action_type=action_type,
         input_paths=input_paths, output_path=output_path)
@@ -49,18 +52,16 @@ def run(
         ignore_files=ignore_files, ignore_extensions=ignore_extensions)
 
     elif action_type == ActionTypes.DECOMPRESS.value:
-        error_msg = handler.decompress_files(
-            directories=input_paths, output_path=output_path)
-        valid = display_info.alert(error_msg)
+        error_msg = handle_decompress_action_with_timeout(
+            timeout_seconds=timeout_seconds, handler=handler, 
+            input_paths=input_paths, output_path=output_path)
 
+        valid = display_info.alert(error_msg=error_msg)
     elif action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:
         result = handler.remove_from_archive(
             input_paths=input_paths, archive_path=output_path)
 
-    elif (
-        action_type == ActionTypes.UPDATE_ARCHIVE.value
-        or action_type == ActionTypes.ADD_TO_ARCHIVE.value
-    ):
+    elif action_type == ActionTypes.UPDATE_ARCHIVE.value:
         handler.open_output_file(output_file_path=output_path)
         result = handler.update_archive(
             input_paths=input_paths, archive_path=output_path)
@@ -82,6 +83,19 @@ def run(
 
 
 def define_handler(compression_type, bytes_size):
+    """Define a compression handler based on the specified compression type.
+
+    Args:
+        compression_type (str): The type of compression algorithm.
+        bytes_size (int): The number of bytes to process at a time.
+
+    Returns:
+        FilesystemHandler: The initialized filesystem handler object.
+    
+    Raises:
+        Exception: If the compression_type is not recognized.
+    """
+
     if compression_type == CompressionTypes.RLE.name.lower():
         compression_algorithem = CompressionTypes.RLE.value(
             bytes_size=bytes_size
@@ -102,9 +116,43 @@ def define_handler(compression_type, bytes_size):
     return handler
 
 
+def handle_decompress_action_with_timeout(
+        timeout_seconds: int, handler: FilesystemHandler, 
+        input_paths: list, output_path: str) -> bool:
+    """Handle decompression action with a timeout.
+
+    Args:
+        timeout_seconds (int): The timeout duration in seconds.
+        handler (FilesystemHandler): The filesystem handler object.
+        input_paths (list): List of input file paths to decompress.
+        output_path (str): Output path for the decompressed files.
+
+    Returns:
+        bool: True if decompression succeeds, False otherwise.
+    """
+    try:
+        error_msg = func_timeout(
+            timeout_seconds, handler.decompress_files, 
+            args=(input_paths, output_path))
+    except FunctionTimedOut:
+        error_msg = f"Decompress execution timed out "
+        error_msg += f"[{timeout_seconds} seconds]."
+    return error_msg 
+
+
 def handle_compress_action(
         handler, input_paths, output_path, ignore_folders, 
         ignore_files, ignore_extensions) -> None:
+    """Handle compression action.
+
+    Args:
+        handler (FilesystemHandler): The filesystem handler object.
+        input_paths (list): List of input paths to compress.
+        output_path (str): Output path for the compressed file.
+        ignore_folders (list): List of folder names to ignore during compression.
+        ignore_files (list): List of file names to ignore during compression.
+        ignore_extensions (list): List of file extensions to ignore during compression.
+    """
     if os.path.isfile(output_path):
         os.remove(output_path)
 
@@ -131,7 +179,6 @@ def validate_args(output_path: str, action_type: str) -> None:
         error_msg = f"Error - missing output path parameter."
 
     elif action_type in [
-        ActionTypes.ADD_TO_ARCHIVE.value,
         ActionTypes.REMOVE_FROM_ARCHIVE.value,
         ActionTypes.UPDATE_ARCHIVE.value,
     ] and not os.path.isfile(output_path):
@@ -222,6 +269,15 @@ if "__main__" == __name__:
         default=[],
     )
 
+    parser.add_argument(
+        "--timeout",
+        metavar="timeout",
+        type=int,
+        help="timeout in seconds to execute decompress function",
+        default=300,
+        required=False
+    )
+
     # Parse the command-line arguments
     args = parser.parse_args()
     print(create_cefd_banner())
@@ -234,4 +290,5 @@ if "__main__" == __name__:
         ignore_files=args.ignore_files,
         ignore_folders=args.ignore_folders,
         ignore_extensions=args.ignore_extensions,
+        timeout_seconds=args.timeout
     )

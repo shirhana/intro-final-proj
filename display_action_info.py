@@ -234,7 +234,6 @@ class DisplayActionInfo:
 
         elif (
             self._action_type == ActionTypes.UPDATE_ARCHIVE.value
-            or self._action_type == ActionTypes.ADD_TO_ARCHIVE.value
         ):
             success = self.show_update_archive_info(result=result)
 
@@ -269,5 +268,8 @@ class DisplayActionInfo:
                     )
                 )
                 print(print_colored(text=error_type, color=self._clrs.red))
+            return False
+        elif self._action_type == ActionTypes.DECOMPRESS.value:
+            print(print_colored(text=error_msg, color=self._clrs.red))
             return False
         return True

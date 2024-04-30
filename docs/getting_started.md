@@ -14,6 +14,7 @@
 | --ignore_files                      | option to ignore specific files while compression       |
 | --ignore_folders                    | option to ignore specific folders while compression     |
 | --ignore_extensions                 | option to ignore specific extensions while compression  |
+| --timeout                           | option to configure timeout in seconds to decompress action compression [Default=300 (5 minutes)] |
 | -h, --help                          | Show help                                               |
 
 ## Examples
@@ -51,7 +52,7 @@
 `python main.py --input_paths_list path/to/file/pre/upadte1 path/to/file/pre/upadte2 --output_path output.bin --action_type update-archive`
 
 
-## UI
+## UI   
 **Setup CompressFly UI:**
 
 `python main_ui.py`

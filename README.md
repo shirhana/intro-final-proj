@@ -21,6 +21,7 @@ Install using pip:
 | --ignore_files                      | option to ignore specific files while compression       |
 | --ignore_folders                    | option to ignore specific folders while compression     |
 | --ignore_extensions                 | option to ignore specific extensions while compression  |
+| --timeout                           | option to configure timeout in seconds to decompress action compression [Default=300 (5 minutes)] |
 | -h, --help                          | Show help                                               |
 
 ## Examples
@@ -47,7 +48,7 @@ Install using pip:
 
 **Add files into archive file - output.bin:**
 
-`python main.py --input_paths_list path/to/new/file --output_path output.bin --action_type add-to-archive`
+`python main.py --input_paths_list path/to/new/file --output_path output.bin --action_type update-archive`
 
 **Remove files from archive file - output.bin:**
 

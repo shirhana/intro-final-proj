@@ -123,7 +123,7 @@ def test_add_to_archive():
             f.write('stamstam')
 
         # ADD TO ARCHIVE
-        run(input_paths=[os.path.join(folder_name, new_file_name)], output_path=output_path, action_type=ActionTypes.ADD_TO_ARCHIVE.value, compression_type=compression_type)
+        run(input_paths=[os.path.join(folder_name, new_file_name)], output_path=output_path, action_type=ActionTypes.UPDATE_ARCHIVE.value, compression_type=compression_type)
 
 
         clean([os.path.join(folder_name, new_file_name)])
