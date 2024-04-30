@@ -1,7 +1,6 @@
 # Welcome to CompressFly Project Documentation
 
 This project aims to develop a Python tool that allows users to compress and decompress files and folders. Users can choose from three types of compression algorithms: Run-Length Encoding (RLE), Huffman coding, and Lempel-Ziv.
-The goal of this project 
 
 
 ## *Easy & Pythonic!!* 
