@@ -1,11 +1,4 @@
-## My Final Project In INTRO Course
-<img src="static\images\compress_fly.jpg" width="170" height="170" />
-
-## Installation
-
-Install using pip:
-
-`pip3 install compressfly`
+# Getting Started
 
 ## Usage
 
@@ -58,30 +51,7 @@ Install using pip:
 `python main.py --input_paths_list path/to/file/pre/upadte1 path/to/file/pre/upadte2 --output_path output.bin --action_type update-archive`
 
 
-## UI 
-
+## UI
 **Setup CompressFly UI:**
 
 `python main_ui.py`
-
-## DOCUMENTION
-
-**Setup Documention with mkdocs:**
-
-1) `python -m mkdocs build`
-2) `python -m mkdocs serve`
-
-and visit: `http://localhost:8000`
-<img src="assets\mkdocs_page.png" />
-
-
-## Tests
-
-**Test this project just by running:**
-
-`python -m pytest`
-
-## ARCHITECTURE
-![ARCHITECTURE](assets/compression-architecture2.jpg)
-
-<!-- ![](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzZweHdzMWUwcTQ1N2toZXdzdjMzZGoxdDNxNTRwaXA5Y3Ric2xzaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lOPJZITKZYLiU3cfGl/giphy.gif) -->

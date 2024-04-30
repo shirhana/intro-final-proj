@@ -3,16 +3,11 @@ site_name: CompressFly
 repo_url: https://github.com/shirhana/intro-final-proj
 
 # Navigation menu
-nav:
-  - Code Reference: reference/  
+nav:  
   - Home: index.md
-  - Introduction: introduction.md
-  - Install: install.md
-  - Configuration: configuration.md
-  - Example: example.md
-  - Development: development.md
-  - Deployment: deployment.md
-  - Release notes: release_notes.md
+  - Getting Started: getting_started.md
+  - Architecture: architecture.md
+  - Code Reference: reference/
   
 # Theme
 theme:
