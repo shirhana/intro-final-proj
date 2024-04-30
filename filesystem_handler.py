@@ -31,72 +31,70 @@ class FilesystemHandler:
         get_compression_algorithem_name(self) -> str:
             Get the name of the compression algorithm.
 
-        set_compression_algorithem(self, compression_algorithem: DataCompression) -> None:
+        set_compression_algorithem() -> None:
             Set the compression algorithm.
 
-        open_output_file(self, output_file_path: str) -> None:
+        open_output_file() -> None:
             Open the output file for writing compressed data.
 
         close_output_file(self) -> None:
             Close the output file.
 
-        read_file(self, file: str) -> Union[str, bytes]:
+        read_file() -> bytes:
             Read data from a file.
 
-        write_file(self, file: str, data: str) -> None:
+        write_file() -> None:
             Write data to a file.
 
-        compress_data_to_file(self, data: bytes) -> None:
+        compress_data_to_file() -> None:
             Compress data and write it to the output file.
 
-        get_decompressed_data(self, compressed_data: bytes, index: int = 0) -> Tuple[bytes, int]:
+        get_decompressed_data() -> Tuple[bytes, int]:
             Get decompressed data from compressed data.
 
-        define_compression_algorithem(self, algorithem_type: bytes) -> None:
+        define_compression_algorithem() -> None:
             Define the compression algorithm based on metadata.
 
-        valid_for_compression(self, data: bytes) -> bool:
+        valid_for_compression() -> bool:
             True if the data is valid for compression, False otherwise.
 
         write_metadata(self) -> None:
             Write metadata about the compression algorithm to the output file.
 
-        read_metadata(self, compressed_data: str, index: int = 0) -> Tuple[str, int]:
+        read_metadata() -> Tuple[str, int]:
             Read metadata from compressed data.
 
-        compress(self, directories: list, subfolder: str = '', ignore_folders: list = [],
-                  ignore_files: list = [], ignore_extensions: list = [], init_compression: bool = False) -> None:
+        compress() -> None:
             Compress files and directories recursively.
 
-        should_stop(self, compressed_file_path: str = '', compressed_data: bytes = b'') -> bool:
+        compress_with_error():
+            Handles compression errors and raises exceptions.   
+
+        should_stop() -> bool:
             Check if the compression or decompression process should stop.
 
-        should_read_compressed_file(self, compressed_file_path: str = '', compressed_data: bytes = b'') -> bool:
+        should_read_compressed_file() -> bool:
             Check if a compressed file should be read.
 
-        handle_init_decompression(self, compressed_data, view_mode=False, debug_mode=False,
-                                   compressed_file_path: str = '') -> int:
+        handle_init_decompression() -> int:
             Handle initialization for decompression.
 
-        get_next_path_from_archive(self, compressed_data, view_mode=False, debug_mode=True,
-                                   index=0, get_file_path=False, output_path: str = "") -> int:
+        get_next_path_from_archive() -> int:
             Get the next path from the compressed archive.
 
-        decompress(self, compressed_file_path: str = '', compressed_data: bytes = b'', subfolder: str = '',
-                   view_mode: bool = False, debug_mode: bool = False, init_decompression: bool = False,
-                   output_path: str = "") -> None:
+        decompress() -> None:
             Decompress files and directories recursively.
 
-        decompress_files(self, directories: list, output_path: str = '', view_mode: bool = False) -> None:
+        decompress_files() -> None:
             Decompress multiple files.
 
-        remove_from_archive(self, input_paths: list, archive_path:str) -> int:
+        remove_from_archive() -> int:
             Remove files from an archive and update the archive.
 
-        update_archive(self, input_paths: list, archive_path:str) -> None:
+        update_archive() -> None:
             Update an existing archive with new files.
 
-        check_validation(self, archive_paths: str) -> dict:
+        check_validation() -> dict:
             Check the validation of archived files and directories.
 
     """

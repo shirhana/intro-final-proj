@@ -18,20 +18,20 @@ class HuffmanCompression(DataCompression):
         characters.
 
     Methods:
-        make_frequency_dict(text: str) -> dict: Creates a frequency dictionary
+        make_frequency_dict() -> dict: Creates a frequency dictionary
         for characters in the input text.
-        make_heap(frequency: dict): Creates a heap from the frequency
+        make_heap(): Creates a heap from the frequency
         dictionary.
         merge_nodes(): Merges nodes in the heap to build the Huffman tree.
         make_codes_helper(root, current_code): Helper function to generate Huffman codes.
         make_codes(): Generates Huffman codes for characters in the input text.
-        get_encoded_text(text: str) -> str: Encodes the input text using Huffman codes.
-        pad_encoded_text(encoded_text: str) -> str: Pads the encoded text to ensure byte alignment.
-        get_byte_array(padded_encoded_text: str) -> bytearray: Converts padded encoded text to byte array.
+        get_encoded_text() -> str: Encodes the input text using Huffman codes.
+        pad_encoded_text() -> str: Pads the encoded text to ensure byte alignment.
+        get_byte_array() -> bytearray: Converts padded encoded text to byte array.
         compress_data(data) -> bytes: Compresses input data using Huffman coding.
-        remove_padding(padded_encoded_text: str) -> str: Removes padding from encoded text.
-        decode_data(encoded_text: str, huffman_table: dict) -> bytes: Decodes Huffman encoded text.
-        decompress_data(compressed_data: bytes) -> bytes: Decompresses data compressed with Huffman coding.
+        remove_padding() -> str: Removes padding from encoded text.
+        decode_data() -> bytes: Decodes Huffman encoded text.
+        decompress_data() -> bytes: Decompresses data compressed with Huffman coding.
         get_metadata() -> bytes: Retrieves metadata related to Huffman compression.
     """
 

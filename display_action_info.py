@@ -24,26 +24,26 @@ class DisplayActionInfo:
         _clrs (Colors): Instance of the Colors class for color formatting.
 
     Methods:
-        __init__(self, action_type: str, input_paths: list, output_path: str)
+        __init__()
          -> None:
             Initialize the DisplayActionInfo object.
         start_clock(self) -> None:
             Start the clock to measure execution time.
         stop_clock(self) -> None:
             Stop the clock and calculate elapsed time.
-        get_folder_size(path: str) -> int:
+        get_folder_size() -> int:
             Calculate the size of a folder recursively.
-        get_total_size_of_directories(directories: list) -> int:
+        get_total_size_of_directories() -> int:
             Calculate the total size of multiple directories.
         display_elapsed_time(self) -> None:
             Display the elapsed time for the action.
-        show_compress_info(compression_algorithem: str, input_paths_size: int) -> None:
+        show_compress_info() -> None:
             Display compression information.
-        show_remove_from_archive_info(result: int) -> None:
+        show_remove_from_archive_info() -> None:
             Display information about removing files from the archive.
-        show(self, result: str, compression_algorithem: str) -> None:
+        show() -> None:
             Show information related to the action.
-        alert(error_msg: dict | str) -> bool:
+        alert() -> bool:
             Display alerts or error messages.
     """
 
