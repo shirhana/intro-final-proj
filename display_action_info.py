@@ -2,7 +2,7 @@ import os
 import time
 from utility import print_colored, Colors
 from action_types import ActionTypes
-from typing import Union
+from typing import Dict, List, Union
 
 
 class DisplayActionInfo:
@@ -48,7 +48,7 @@ class DisplayActionInfo:
     """
 
     def __init__(
-        self, action_type: str, input_paths: list, output_path: str
+        self, action_type: str, input_paths: List[str], output_path: str
     ) -> None:
         """Initialize the DisplayActionInfo object.
 
@@ -61,17 +61,17 @@ class DisplayActionInfo:
         self._action_type = action_type
         self._input_paths = input_paths
         self._output_path = output_path
-        self._start_clock = None
-        self._elapsed_time = None
+        self._start_clock = 0.0
+        self._elapsed_time = 0.0
         self._clrs = Colors()
 
         self.start_clock()
 
-    def start_clock(self):
+    def start_clock(self) -> None:
         """Start the clock to measure execution time."""
         self._start_clock = time.time()
 
-    def stop_clock(self):
+    def stop_clock(self) -> None:
         """Stop the clock and calculate elapsed time."""
         self._elapsed_time = float(time.time() - self._start_clock)
 
@@ -93,7 +93,7 @@ class DisplayActionInfo:
                 total_size += os.path.getsize(fp)
         return total_size
 
-    def get_total_size_of_directories(self, directories: list) -> int:
+    def get_total_size_of_directories(self, directories: List[str]) -> int:
         """Calculate the total size of multiple directories.
 
         Args:
@@ -139,10 +139,10 @@ class DisplayActionInfo:
         outpath_size = self.get_total_size_of_directories(
             directories=[self._output_path]
         )
-        clr_size = print_colored(text=outpath_size, color=self._clrs.yellow)
+        clr_size = print_colored(text=str(outpath_size), color=self._clrs.yellow)
         print(f"Compressed Size: {clr_size} bytes")
         clr_delta_size = print_colored(
-            int(input_paths_size - outpath_size), color=self._clrs.cyan
+            str(int(input_paths_size - outpath_size)), color=self._clrs.cyan
         )
         print(f"Delta Size --> {clr_delta_size}")
         try:
@@ -154,7 +154,8 @@ class DisplayActionInfo:
         except ZeroDivisionError:
             pass
 
-    def show_remove_from_archive_info(self, result: int) -> None:
+    def show_remove_from_archive_info(self, 
+            result: Union[int, str, bool, Dict[str,str], None]) -> bool:
         """Display information about removing files from the archive.
 
         Args:
@@ -185,14 +186,15 @@ class DisplayActionInfo:
             print(print_colored(text=msg, color=self._clrs.green))
             return True
 
-    def show_update_archive_info(self, result: bool) -> None:
+    def show_update_archive_info(self, 
+        result: Union[int, str, bool, Dict[str,str], None]) -> bool:
         """Display information about updating files in archive.
 
         Args:
             result (bool): indicates when the updating was succeeded.
 
         Returns:
-            bool: True if updation was successful, False otherwise.
+            bool | str: True if updation was successful, False otherwise.
 
         Prints information about the updation process, indicating
         success or failure based on the result.
@@ -201,16 +203,18 @@ class DisplayActionInfo:
             msg = f"Cannot handle with {self._input_paths}!\n"
             msg += f"{self._output_path} is NOT VALID COMPRESS FILE!"
             print(print_colored(text=msg, color=self._clrs.red))
-
-        return result
+            return False
+        
+        return True
 
     def show(
-        self, result: Union[str, bool], compression_algorithem: str
+        self, compression_algorithem: str, 
+        result: Union[str, bool, Dict[str, str], None, int] = ""
     ) -> None:
         """Show information related to the action.
 
         Args:
-            result Union[str, bool]: Result or output of the action.
+            result str | bool: Result or output of the action.
             compression_algorithm (str): Name of the compression
             algorithm used.
         """
@@ -240,7 +244,7 @@ class DisplayActionInfo:
         if success:
             self.display_elapsed_time()
 
-    def alert(self, error_msg: Union[str, dict]) -> bool:
+    def alert(self, error_msg: Union[str, Dict[str, str]]) -> bool:
         """Display alerts or error messages.
 
         Args:

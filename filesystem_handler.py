@@ -1,7 +1,7 @@
 import os
 from data_compression import DataCompression
 from compression_types import CompressionTypes
-from typing import Tuple
+from typing import BinaryIO, Dict, List, Optional, Tuple, Union
 from exceptions import *
 
 
@@ -107,14 +107,11 @@ class FilesystemHandler:
             data_compression_algorithem (DataCompression):
             The data compression algorithm instance.
         """
-        self._compression_algorithem = None
-        self._output_file = None
+        self._compression_algorithem: DataCompression = \
+            data_compression_algorithem
+        self._output_file: Optional[BinaryIO] = None
         self._folder_suffix = "/"
         self._bytes_length = 16
-
-        self.set_compression_algorithem(
-            compression_algorithem=data_compression_algorithem
-        )
 
     def get_compression_algorithem_name(self) -> str:
         """Get the name of the compression algorithm.
@@ -145,7 +142,8 @@ class FilesystemHandler:
 
     def close_output_file(self) -> None:
         """Close the output file."""
-        self._output_file.close()
+        if self._output_file is not None:
+            self._output_file.close()
 
     def read_file(self, file: str) -> bytes:
         """Read data from a file.
@@ -159,7 +157,7 @@ class FilesystemHandler:
         with open(file, "rb") as f:
             return f.read()
 
-    def write_file(self, file: str, data: str) -> None:
+    def write_file(self, file: str, data: bytes) -> None:
         """Write data to a file.
 
         Args:
@@ -184,8 +182,9 @@ class FilesystemHandler:
         data_len = len(compressed_data).to_bytes(
             self._bytes_length, byteorder="big"
         )
-        self._output_file.write(data_len)
-        self._output_file.write(compressed_data)
+        if self._output_file:
+            self._output_file.write(data_len)
+            self._output_file.write(compressed_data)
 
     def get_decompressed_data(
         self, compressed_data: bytes, index: int = 0
@@ -218,6 +217,9 @@ class FilesystemHandler:
             algorithem_type (bytes): The metadata indicating the
             compression algorithm type.
         """
+
+        algo: Optional[DataCompression] = None
+        
         # RLE algorithem
         if algorithem_type.startswith(
             CompressionTypes.RLE.value.__name__.encode()
@@ -252,16 +254,17 @@ class FilesystemHandler:
         metadata_len = len(algo_metadata).to_bytes(
             self._bytes_length, byteorder="big"
         )
-        self._output_file.write(metadata_len)
-        self._output_file.write(algo_metadata)
+        if self._output_file:
+            self._output_file.write(metadata_len)
+            self._output_file.write(algo_metadata)
 
     def read_metadata(
-        self, compressed_data: str, index: int = 0
-    ) -> Tuple[str, int]:
+        self, compressed_data: bytes, index: int = 0
+    ) -> Tuple[bytes, int]:
         """Read metadata from compressed data.
 
         Args:
-            compressed_data (str): The compressed data.
+            compressed_data (bytes): The compressed data.
             index (int, optional): The index to start reading from in the
             compressed data. Defaults to 0.
 
@@ -293,8 +296,7 @@ class FilesystemHandler:
         return True
 
     def compress_with_error(
-            self, should_remove_output, exception_type: Exception = Exception, 
-            aborted_msg: str = '', full_dir_path: str = '') -> None:
+            self, should_remove_output: bool, exception_type: Exception) -> None:
         """
         Handles compression errors and raises exceptions.
 
@@ -323,25 +325,18 @@ class FilesystemHandler:
         be raised; otherwise, a generic Exception will be raised.
         """
         self.close_output_file()
-        if should_remove_output:
+        if should_remove_output and self._output_file:
             os.remove(self._output_file.name)
 
-        if aborted_msg == '':
-            algo_name = self.get_compression_algorithem_name()
-            aborted_msg = f"Could not compress {full_dir_path} "
-            aborted_msg += f"using {algo_name}."
-            raise InvalidDataForCompressionAlgorithem(aborted_msg)
-        
-        else:
-            raise exception_type(aborted_msg)
+        raise exception_type
 
     def compress(
         self,
-        directories: list,
+        directories: List[str],
         subfolder: str = "",
-        ignore_folders: list = [],
-        ignore_files: list = [],
-        ignore_extensions: list = [],
+        ignore_folders: List[str] = [],
+        ignore_files: List[str] = [],
+        ignore_extensions: List[str] = [],
         init_compression: bool = False,
         remove_output: bool = True,
     ) -> None:
@@ -400,6 +395,9 @@ class FilesystemHandler:
                     full_file_data = self.read_file(file=full_dir_path)
                     file_path = full_dir_path.encode()
 
+                    exception_type = self.get_invalid_data_exception(
+                                full_dir_path=full_dir_path)
+
                     if self.valid_for_compression(
                         data=full_file_data
                     ) and self.valid_for_compression(data=file_path):
@@ -411,20 +409,35 @@ class FilesystemHandler:
                         except Exception:
                             self.compress_with_error(
                             should_remove_output=remove_output,
-                            full_dir_path=full_dir_path
+                            exception_type=exception_type
                         )
-                    else:
+                    else: 
                         self.compress_with_error(
                             should_remove_output=remove_output,
-                            full_dir_path=full_dir_path
+                            exception_type=exception_type
                         ) 
 
             else:
+                aborted_msg = f"Error - {full_dir_path} does not exist."
                 self.compress_with_error(
                     should_remove_output=remove_output, 
-                    exception_type=MissingInputPath,
-                    aborted_msg=f"Error - {full_dir_path} does not exist."
+                    exception_type=MissingInputPath(aborted_msg),
                     )
+                
+    def get_invalid_data_exception(self, full_dir_path: str) -> Exception:
+        """Returns invalid data for compression exception according
+        to the full dir path.
+
+        Args:
+            full_dir_path (str): Path to the compressed file.
+
+        Returns:
+            Exception: invalid data for compression exception.
+        """
+        algo_name = self.get_compression_algorithem_name()
+        aborted_msg = f"Could not compress {full_dir_path} "
+        aborted_msg += f"using {algo_name}."
+        return InvalidDataForCompressionAlgorithem(aborted_msg)
 
     def should_stop(
         self, compressed_file_path: str = "", compressed_data: bytes = b""
@@ -467,9 +480,9 @@ class FilesystemHandler:
 
     def handle_init_decompression(
         self,
-        compressed_data,
-        view_mode=False,
-        debug_mode=False,
+        compressed_data: bytes,
+        view_mode: bool = False,
+        debug_mode: bool = False,
         compressed_file_path: str = "",
     ) -> int:
         """Handle initialization for decompression.
@@ -502,12 +515,11 @@ class FilesystemHandler:
     def get_next_path_from_archive(
         self,
         compressed_data: bytes,
-        view_mode=False,
-        debug_mode=True,
-        index=0,
-        get_file_path=False,
+        view_mode: bool = False,
+        debug_mode: bool = True,
+        index: int = 0,
         output_path: str = "",
-    ) -> int:
+    ) -> Tuple[int, bytes]:
         """Get the next path from the compressed archive.
 
         Args:
@@ -518,7 +530,6 @@ class FilesystemHandler:
             Defaults to True.
             index (int, optional): The index to start reading from in
             the compressed data. Defaults to 0.
-            get_file_path (bool, optional): Whether to get the file path.
             Defaults to False.
             output_path (str, optional): The output path for decompressed
             files. Defaults to "".
@@ -533,7 +544,7 @@ class FilesystemHandler:
 
         # if path presents a folder
         if path.decode().endswith(self._folder_suffix):
-            file_data = None
+            file_data = b""
 
         # if path presents a file
         else:
@@ -550,10 +561,8 @@ class FilesystemHandler:
             self.write_file(file=file_path, data=file_data)
             print(f"Done extract & write {file_path}.")
 
-        if get_file_path:
-            return next_index, path
-        else:
-            return next_index
+        return next_index, path
+        
 
     def decompress(
         self,
@@ -604,7 +613,7 @@ class FilesystemHandler:
         else:
             next_index = 0
 
-        next_index = self.get_next_path_from_archive(
+        next_index, file_path = self.get_next_path_from_archive(
             compressed_data=compressed_data,
             view_mode=view_mode,
             debug_mode=debug_mode,
@@ -624,11 +633,11 @@ class FilesystemHandler:
 
     def decompress_files(
         self,
-        directories: list,
+        directories: List[str],
         output_path: str = "",
         view_mode: bool = False,
         debug_mode: bool = False,
-    ) -> dict:
+    ) -> Dict[str, str]:
         """Decompress multiple files.
 
         Args:
@@ -661,7 +670,8 @@ class FilesystemHandler:
         return non_valid_archive_paths
 
     def remove_from_archive(
-            self, input_paths: list, archive_path: str) -> int:
+            self, input_paths: List[str], 
+            archive_path: str) -> Union[int, str, bool, Dict[str,str], None]:
         """Remove files from an archive and update the archive.
 
         Args:
@@ -686,7 +696,6 @@ class FilesystemHandler:
 
                 next_index, file_path = self.get_next_path_from_archive(
                     compressed_data=compressed_data,
-                    get_file_path=True,
                     index=next_index,
                 )
                 if file_path.decode().startswith(tuple(input_paths)):
@@ -698,12 +707,13 @@ class FilesystemHandler:
 
                 i = next_index
         except Exception as e:
-            return
+            return None
 
         self.write_file(file=archive_path, data=bytes(update_compressed_data))
         return count_files_removes
 
-    def update_archive(self, input_paths: list, archive_path: str) -> bool:
+    def update_archive(self, input_paths: List[str], 
+                       archive_path: str) -> bool:
         """Update an existing archive with new files.
 
         Args:
@@ -722,11 +732,11 @@ class FilesystemHandler:
             self.compress(directories=input_paths, remove_output=False)
             return True
 
-    def check_validation(self, archive_paths: str) -> dict:
+    def check_validation(self, archive_paths: List[str]) -> Dict[str, str]:
         """Check the validation of archived files and directories.
 
         Args:
-            archive_paths (str): List of paths to archived
+            archive_paths (list): List of paths to archived
             files and directories.
 
         Returns:
@@ -737,6 +747,3 @@ class FilesystemHandler:
         return self.decompress_files(
             directories=archive_paths, debug_mode=True
         )
-
-
-

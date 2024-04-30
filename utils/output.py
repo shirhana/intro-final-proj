@@ -2,7 +2,7 @@ import sys
 from colorama import Fore, Style
 
 
-def info(string: str):
+def info(string: str) -> None:
     """
     Print an informational message in blue.
 
@@ -13,7 +13,7 @@ def info(string: str):
     print(Fore.BLUE + preface + string + Style.RESET_ALL)
 
 
-def error(string: str):
+def error(string: str) -> None:
     """
     Print an error message in red and exit the program.
 
@@ -25,7 +25,7 @@ def error(string: str):
     sys.exit(1)
 
 
-def warn(string: str):
+def warn(string: str) -> None:
     """
     Print a warning message in yellow.
 
@@ -36,7 +36,7 @@ def warn(string: str):
     print(Fore.YELLOW + preface + string + Style.RESET_ALL)
 
 
-def success(string: str):
+def success(string: str) -> None:
     """
     Print a success message in green.
 
@@ -47,7 +47,7 @@ def success(string: str):
     print(Fore.GREEN + preface + string + Style.RESET_ALL)
 
 
-def heading(string: str):
+def heading(string: str) -> None:
     """
     Print a heading message surrounded by decorative characters.
 

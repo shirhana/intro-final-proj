@@ -97,7 +97,7 @@ def parse_arguments():
     return args
 
 
-def main():
+def main() -> None:
     """Main function to run the application."""
     try:
         os.makedirs(PLAYGROUND)

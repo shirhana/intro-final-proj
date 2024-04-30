@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import List
 from exceptions import InvalidDataForCompressionAlgorithem
 
 class DataCompression(ABC):
@@ -28,7 +29,7 @@ class DataCompression(ABC):
         self._bigger_than_max_bytes_sign = b"*^&"
 
     @abstractmethod
-    def compress_data(data: bytes) -> bytes:
+    def compress_data(self, data: bytes) -> bytes:
         """Compresses input data.
 
         Args:
@@ -40,7 +41,7 @@ class DataCompression(ABC):
         pass
 
     @abstractmethod
-    def decompress_data(compressed_data: bytes) -> bytes:
+    def decompress_data(self, compressed_data: bytes) -> bytes:
         """Decompresses input data.
 
         Args:
@@ -52,7 +53,7 @@ class DataCompression(ABC):
         pass
 
     @abstractmethod
-    def get_metadata() -> bytes:
+    def get_metadata(self) -> bytes:
         """Retrieves metadata related to the compression.
 
         Returns:
@@ -60,11 +61,12 @@ class DataCompression(ABC):
         """
         pass
 
-    def get_special_signs(self) -> list:
+    def get_special_signs(self) -> List[bytes]:
         """Get the special signs for the compression algorithm.
 
         Returns:
-            list: A list of special signs, including the last data bytes sign.
+            List[bytes]: A list of special signs, including the 
+            last data bytes sign.
         """
         special_signs = []
         special_signs.append(self._bigger_than_max_bytes_sign)

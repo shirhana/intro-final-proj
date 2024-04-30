@@ -220,8 +220,9 @@ def test_invalid_data_for_compression(data):
     (CompressionTypes.LZ.name),
     (CompressionTypes.HUFFMAN.name)
 ])
-def test_compress_and_decompress_big_files(compression_algo):
-    test_folder = 'assets'
+def test_compress_and_decompress_folder(compression_algo):
+    test_folder = 'templates'
+    # test_folder = 'assets'
     playground_folder = 'playground'
     paths = [playground_folder]
     os.makedirs(playground_folder, exist_ok=True)

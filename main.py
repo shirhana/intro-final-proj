@@ -1,22 +1,24 @@
 import os
 import argparse
+from typing import Dict, List, Optional, Union
 from func_timeout import func_timeout, FunctionTimedOut
 from utility import create_cefd_banner
 from filesystem_handler import FilesystemHandler
 from display_action_info import DisplayActionInfo
 from action_types import ActionTypes
 from compression_types import CompressionTypes
+from data_compression import DataCompression
 
 
 def run(
-    input_paths: list,
+    input_paths: List[str],
     output_path: str,
     action_type: str,
     compression_type: str = "rle",
     bytes_size: int = 2,
-    ignore_files: list = [],
-    ignore_folders: list = [],
-    ignore_extensions: list = [],
+    ignore_files: List[str] = [],
+    ignore_folders: List[str] = [],
+    ignore_extensions: List[str] = [],
     timeout_seconds: int = 300,
 ) -> None:
     """Run the specified action with compression and decompression options.
@@ -43,9 +45,8 @@ def run(
 
     display_info = DisplayActionInfo(action_type=action_type,
         input_paths=input_paths, output_path=output_path)
-    result = ""
     valid = True
-
+    result: Union[str, bool, Dict[str, str], None, int] = ""
     if action_type == ActionTypes.COMPRESS.value:
         handle_compress_action(handler=handler, input_paths=input_paths, 
         output_path=output_path, ignore_folders=ignore_folders, 
@@ -79,10 +80,12 @@ def run(
     if valid:
         display_info.show(
             result=result,
-            compression_algorithem=handler.get_compression_algorithem_name())
+            compression_algorithem=\
+                handler.get_compression_algorithem_name())
 
 
-def define_handler(compression_type, bytes_size):
+def define_handler(compression_type: str, 
+                   bytes_size: int) -> FilesystemHandler:
     """Define a compression handler based on the specified compression type.
 
     Args:
@@ -95,6 +98,8 @@ def define_handler(compression_type, bytes_size):
     Raises:
         Exception: If the compression_type is not recognized.
     """
+
+    compression_algorithem: Optional[DataCompression] = None
 
     if compression_type == CompressionTypes.RLE.name.lower():
         compression_algorithem = CompressionTypes.RLE.value(
@@ -118,7 +123,8 @@ def define_handler(compression_type, bytes_size):
 
 def handle_decompress_action_with_timeout(
         timeout_seconds: int, handler: FilesystemHandler, 
-        input_paths: list, output_path: str) -> bool:
+        input_paths: List[str], 
+        output_path: str) -> Union[str, Dict[str, str]]:
     """Handle decompression action with a timeout.
 
     Args:
@@ -128,7 +134,8 @@ def handle_decompress_action_with_timeout(
         output_path (str): Output path for the decompressed files.
 
     Returns:
-        bool: True if decompression succeeds, False otherwise.
+        Union[str, Dict[str, str]]: True if decompression succeeds, 
+        False otherwise.
     """
     try:
         error_msg = func_timeout(
@@ -141,8 +148,9 @@ def handle_decompress_action_with_timeout(
 
 
 def handle_compress_action(
-        handler, input_paths, output_path, ignore_folders, 
-        ignore_files, ignore_extensions) -> None:
+        handler: FilesystemHandler, input_paths: List[str], output_path: str, 
+        ignore_folders: List[str], ignore_files: List[str], 
+        ignore_extensions: List[str]) -> None:
     """Handle compression action.
 
     Args:

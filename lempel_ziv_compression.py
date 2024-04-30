@@ -1,3 +1,4 @@
+from typing import Dict, List
 from data_compression import DataCompression
 
 
@@ -45,7 +46,7 @@ class LempelZivCompression(DataCompression):
         self._last_data_bytes_sign = b"!@#"
 
     def compress_prev(
-        self, result: dict, prev: bytes, compress_data: bytearray
+        self, result: Dict[bytes, int], prev: bytes, compress_data: bytearray
     ) -> None:
         """Compresses the previous sequence in Lempel-Ziv compression.
 
@@ -165,7 +166,7 @@ class LempelZivCompression(DataCompression):
         self,
         decompress_data: bytearray,
         compressed_data: bytes,
-        codebook: dict,
+        codebook: Dict[bytes, int],
         index: int,
         i: int,
     ) -> int:
@@ -230,7 +231,7 @@ class LempelZivCompression(DataCompression):
             return True
         return False
 
-    def get_key_by_val(self, d: dict, value: any) -> any:
+    def get_key_by_val(self, d: Dict[bytes, int], value: int) -> bytes:
         """Gets the key from a dictionary by its value.
 
         Args:
@@ -249,7 +250,7 @@ class LempelZivCompression(DataCompression):
 
     def update_codebook(
         self,
-        codebook: dict,
+        codebook: Dict[bytes, int],
         prev: bytes,
         byte_representation: bytes,
         index: int,
@@ -270,7 +271,7 @@ class LempelZivCompression(DataCompression):
         self,
         decompress_data: bytearray,
         prev: bytes,
-        extra_append: bytes = None,
+        extra_append: bytes = b"",
     ) -> None:
         """Updates the decompressed data during decompression.
 
@@ -282,13 +283,13 @@ class LempelZivCompression(DataCompression):
         """
         decompress_data.extend(prev)
 
-        if extra_append is not None:
+        if not extra_append == b"":
             decompress_data.extend(extra_append)
 
     def decompress_end_of_data(
         self,
         compressed_data: bytes,
-        codebook: dict,
+        codebook: Dict[bytes, int],
         decompress_data: bytearray,
         i: int,
     ) -> None:
@@ -317,7 +318,7 @@ class LempelZivCompression(DataCompression):
         self,
         decompress_data: bytearray,
         compressed_data: bytes,
-        codebook: dict,
+        codebook: Dict[bytes, int],
         codebook_index: int,
         index: int,
         i: int,
@@ -359,7 +360,7 @@ class LempelZivCompression(DataCompression):
             bytes: The decompressed data.
         """
         decompress_data = bytearray()
-        codebook = {}
+        codebook:  Dict[bytes, int] = {}
         index = 1
         i = 0
         while i < len(compressed_data):
@@ -417,11 +418,12 @@ class LempelZivCompression(DataCompression):
 
         return bytes(metadata)
 
-    def get_special_signs(self) -> list:
+    def get_special_signs(self) -> List[bytes]:
         """Get the special signs for the compression algorithm.
 
         Returns:
-            list: A list of special signs, including the last data bytes sign.
+            List[bytes]: A list of special signs, including the 
+            last data bytes sign.
         """
         special_signs = super().get_special_signs()
         special_signs.append(self._last_data_bytes_sign)

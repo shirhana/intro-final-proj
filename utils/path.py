@@ -1,7 +1,9 @@
 import os
 
 from math import log2
+from pathlib import Path
 from time import ctime
+from typing import Dict, List, TextIO, BinaryIO
 
 
 def is_valid_subpath(relative_directory: str, base_directory: str) -> bool:
@@ -61,7 +63,7 @@ def get_relative_path(file_path: str, base_directory: str) -> str:
     ][1:]
 
 
-def human_readable_file_size(size: int):
+def human_readable_file_size(size: int) -> str:
     """
     Convert a file size to a human-readable format.
 
@@ -76,7 +78,8 @@ def human_readable_file_size(size: int):
     return "{:.4g} {}".format(size / (1 << (order * 10)), _suffixes[order])
 
 
-def process_files(directory_files: list, base_directory: str) -> list:
+def process_files(directory_files: os._ScandirIterator[str], 
+                  base_directory: str) -> List[Dict[str, object]]:
     """
     Process a list of directory files into a structured format.
 

@@ -1,5 +1,6 @@
 import heapq
 import json
+from typing import Any, Dict, List, Union
 from data_compression import DataCompression
 
 
@@ -38,9 +39,9 @@ class HuffmanCompression(DataCompression):
     def __init__(self) -> None:
         """Initialize the HuffmanCompression class."""
         super().__init__()
-        self._heap = []
-        self._codes = {}
-        self._reverse_mapping = {}
+        self._heap: List[Any] = []
+        self._codes: Dict[int, str] = {}
+        self._reverse_mapping: Dict[str, int]  = {}
 
     class HeapNode:
         """HeapNode represents a node in the Huffman tree.
@@ -55,7 +56,7 @@ class HuffmanCompression(DataCompression):
             based on frequency.
         """
 
-        def __init__(self, char: str, freq: int) -> None:
+        def __init__(self, char: Union[str, int, None], freq: int) -> None:
             """Initialize a HeapNode with a character and its frequency.
 
             Args:
@@ -67,7 +68,7 @@ class HuffmanCompression(DataCompression):
             self._left = None
             self._right = None
 
-        def __lt__(self, other) -> bool:
+        def __lt__(self, other: Any) -> Any:
             """Compares HeapNodes based on frequency.
 
             Args:
@@ -79,7 +80,7 @@ class HuffmanCompression(DataCompression):
             """
             return self._freq < other._freq
 
-        def __eq__(self, other) -> bool:
+        def __eq__(self, other: Any) -> Any:
             """Checks equality between HeapNodes based on frequency.
 
             Args:
@@ -90,11 +91,11 @@ class HuffmanCompression(DataCompression):
             """
             if other == None:
                 return False
-            if not isinstance(other, self.HeapNode):
+            if not isinstance(other, self.__class__):
                 return False
             return self._freq == other._freq
 
-    def make_frequency_dict(self, text: bytes) -> dict:
+    def make_frequency_dict(self, text: bytes) -> Dict[int,int]:
         """Creates a frequency dictionary for characters in the input text.
 
         Args:
@@ -110,7 +111,7 @@ class HuffmanCompression(DataCompression):
             frequency[character] += 1
         return frequency
 
-    def make_heap(self, frequency: dict) -> None:
+    def make_heap(self, frequency: Dict[int,int]) -> None:
         """Creates a heap from the frequency dictionary.
 
         Args:
@@ -140,7 +141,7 @@ class HuffmanCompression(DataCompression):
 
             heapq.heappush(self._heap, merged)
 
-    def make_codes_helper(self, root, current_code: str) -> None:
+    def make_codes_helper(self, root: Any, current_code: str) -> None:
         """Helper function to generate Huffman codes.
 
         Args:
@@ -271,7 +272,7 @@ class HuffmanCompression(DataCompression):
         return encoded_text
 
     def decode_data(
-        self, encoded_text: str, huffman_table: dict = {}
+        self, encoded_text: str, huffman_table: Dict[str, int] = {}
     ) -> bytes:
         """Decodes the encoded text using the provided Huffman table.
 
