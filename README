@@ -36,7 +36,7 @@ Using mkdocs, all the comments within my code are automatically generated onto t
 
 * Project tests
 
-* Adding types annotations (except of main-ui.py)
+* Adding types annotations (except of main-ui.py/main.py/utils folder)
 
 
 ## Usage

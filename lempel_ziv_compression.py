@@ -365,6 +365,7 @@ class LempelZivCompression(DataCompression):
         i = 0
         while i < len(compressed_data):
             codebook_index = compressed_data[i]
+            # symbol in lempel ziv codebook that contains just itself
             if codebook_index == 0:
                 decompress_data.append(compressed_data[i + 1])
                 prev = b""
@@ -393,6 +394,8 @@ class LempelZivCompression(DataCompression):
                     i=i,
                 )
                 break
+            # that case is for data that has prev symbol 
+            # that already exist in codebool
             else:
                 i = self.decompress_regular_data(
                     decompress_data=decompress_data,

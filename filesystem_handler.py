@@ -88,6 +88,9 @@ class FilesystemHandler:
         decompress_files() -> None:
             Decompress multiple files.
 
+        def remove_paths() -> None:
+            Removes files specified by a list of file paths.
+
         remove_from_archive() -> int:
             Remove files from an archive and update the archive.
 
@@ -573,6 +576,7 @@ class FilesystemHandler:
         debug_mode: bool = False,
         init_decompression: bool = False,
         output_path: str = "",
+        internal_paths: List[str] = []
     ) -> None:
         """Decompress files and directories recursively.
 
@@ -621,6 +625,9 @@ class FilesystemHandler:
             output_path=output_path,
         )
 
+        # save data about all files and dirs inside archive file        
+        internal_paths.append(os.path.join(output_path, file_path.decode()))
+
         # decompress the original data recursivlly from the
         # rest of the compressed data
         self.decompress(
@@ -629,6 +636,7 @@ class FilesystemHandler:
             view_mode=view_mode,
             debug_mode=debug_mode,
             output_path=output_path,
+            internal_paths=internal_paths
         )
 
     def decompress_files(
@@ -654,6 +662,7 @@ class FilesystemHandler:
         """
         non_valid_archive_paths = {}
         for compressed_file in directories:
+            internal_paths: List[str] = []
             try:
                 self.decompress(
                     compressed_file_path=compressed_file,
@@ -661,13 +670,48 @@ class FilesystemHandler:
                     init_decompression=True,
                     output_path=output_path,
                     debug_mode=debug_mode,
+                    internal_paths=internal_paths
                 )
             except Exception as e:
                 non_valid_archive_paths[compressed_file] = (
                     f"raise {type(e).__name__}({e})"
                 )
+                # remove all files of an invalid archive path
+                self.remove_paths(paths=internal_paths)
 
         return non_valid_archive_paths
+    
+    def remove_paths(self, paths: List[str]) -> None:
+        """
+        Removes files specified by a list of file paths.
+
+        Parameters:
+        - paths (List[str]): A list of file paths to be removed.
+
+        Raises:
+        - FileNotFoundError: If a specified path does not exist.
+        - PermissionError: If permission is denied to remove a file
+
+        Notes:
+        - If a specified path does not exist, a FileNotFoundError is raised, 
+        but the removal process continues for other paths.
+        - If permission is denied to remove a file, a PermissionError is 
+        raised, but the removal process continues for other paths.
+        - If no exceptions occur during the removal process, a success 
+        message is printed for each file removed.
+        - If an exception occurs during the removal process, a message 
+        is printed indicating which file encountered the exception, 
+        and the removal process continues for other paths.
+        """
+        for path in paths:
+            try:
+                # ensures that only files are removed, not folders, 
+                # as removing folders can be dangerous and lead to data loss.
+                if os.path.isfile(path):
+                    os.remove(path)
+                    print(f'Done removing {path} because exception occurred.')
+            except (FileNotFoundError, PermissionError) as e:
+                print(f'Failed to remove {path} - {type(e).__name__}: {e}')
 
     def remove_from_archive(
             self, input_paths: List[str], 

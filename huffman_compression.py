@@ -241,6 +241,7 @@ class HuffmanCompression(DataCompression):
         byte_array = self.get_byte_array(padded_encoded_text)
         compress_data = bytearray()
         huffman_table_len = len(json.dumps(self._reverse_mapping).encode())
+        # add sign if huffman_table_len is bigger than the max range
         if huffman_table_len >= self._max_bytes_range:
             a = huffman_table_len // self._max_bytes_range
             b = huffman_table_len % self._max_bytes_range
@@ -307,6 +308,7 @@ class HuffmanCompression(DataCompression):
         Returns:
             bytes: The decompressed data.
         """
+        # if the next data is going to be bigger than the max range 
         if (
             compressed_data[0] == self._bigger_than_max_bytes_sign[0]
             and compressed_data[1] == self._bigger_than_max_bytes_sign[1]
