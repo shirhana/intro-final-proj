@@ -38,7 +38,8 @@ def run(
         ignore_extensions (list, optional): List of file extensions to
         ignore during compression. Defaults to [].
     """
-    validate_args(output_path=output_path, action_type=action_type)
+    if not validate_args(output_path=output_path, action_type=action_type):
+        return
 
     handler = define_handler(
         compression_type=compression_type, bytes_size=bytes_size)
@@ -48,7 +49,7 @@ def run(
     valid = True
     result: Union[str, bool, Dict[str, str], None, int] = ""
     if action_type == ActionTypes.COMPRESS.value:
-        handle_compress_action(handler=handler, input_paths=input_paths, 
+        result = handle_compress_action(handler=handler, input_paths=input_paths, 
         output_path=output_path, ignore_folders=ignore_folders, 
         ignore_files=ignore_files, ignore_extensions=ignore_extensions)
 
@@ -94,9 +95,6 @@ def define_handler(compression_type: str,
 
     Returns:
         FilesystemHandler: The initialized filesystem handler object.
-    
-    Raises:
-        Exception: If the compression_type is not recognized.
     """
 
     compression_algorithem: Optional[DataCompression] = None
@@ -109,10 +107,6 @@ def define_handler(compression_type: str,
         compression_algorithem = CompressionTypes.HUFFMAN.value()
     elif compression_type == CompressionTypes.LZ.name.lower():
         compression_algorithem = CompressionTypes.LZ.value()
-    else:
-        abort_msg = f"Error- {compression_type} must be one of: "
-        abort_msg += f"{[member.name.lower() for member in CompressionTypes]}"
-        raise Exception(abort_msg)
 
     handler = FilesystemHandler(
         data_compression_algorithem=compression_algorithem
@@ -150,7 +144,7 @@ def handle_decompress_action_with_timeout(
 def handle_compress_action(
         handler: FilesystemHandler, input_paths: List[str], output_path: str, 
         ignore_folders: List[str], ignore_files: List[str], 
-        ignore_extensions: List[str]) -> None:
+        ignore_extensions: List[str]) -> Union[str,None]:
     """Handle compression action.
 
     Args:
@@ -165,21 +159,23 @@ def handle_compress_action(
         os.remove(output_path)
 
     handler.open_output_file(output_file_path=output_path)
-    handler.compress(
+    result = handler.compress(
         directories=input_paths,ignore_folders=ignore_folders,
         ignore_extensions=ignore_extensions,ignore_files=ignore_files,
         init_compression=True,)
     handler.close_output_file()
 
+    return result
 
-def validate_args(output_path: str, action_type: str) -> None:
+
+def validate_args(output_path: str, action_type: str) -> bool:
     """Validate the command-line arguments.
 
     Args:
         output_path (str): Path to the output file or directory.
         action_type (str): Type of action to perform.
-    Raises:
-        Exception: If validation fails.
+    Return:
+        bool: If validation valid or not.
     """
     error_msg = ""
 
@@ -195,10 +191,12 @@ def validate_args(output_path: str, action_type: str) -> None:
 
     elif action_type == ActionTypes.DECOMPRESS.value:
         if output_path and not os.path.isdir(output_path):
-            error_msg = f"Error - output_path: {output_path} is invalid."
+            error_msg = f"Error - output_path: {output_path} doesn't exist."
 
     if error_msg:
-        raise Exception(error_msg)
+        print(Exception(error_msg))
+        return False
+    return True
 
 
 if "__main__" == __name__:
@@ -287,16 +285,25 @@ if "__main__" == __name__:
     )
 
     # Parse the command-line arguments
-    args = parser.parse_args()
-    print(create_cefd_banner())
-    run(
-        input_paths=args.input_paths_list,
-        output_path=args.output_path,
-        action_type=args.action_type,
-        compression_type=args.compression_type,
-        bytes_size=args.bytes_size,
-        ignore_files=args.ignore_files,
-        ignore_folders=args.ignore_folders,
-        ignore_extensions=args.ignore_extensions,
-        timeout_seconds=args.timeout
-    )
+    try:
+        args = parser.parse_args()
+        print(create_cefd_banner())
+        run(
+            input_paths=args.input_paths_list,
+            output_path=args.output_path,
+            action_type=args.action_type,
+            compression_type=args.compression_type,
+            bytes_size=args.bytes_size,
+            ignore_files=args.ignore_files,
+            ignore_folders=args.ignore_folders,
+            ignore_extensions=args.ignore_extensions,
+            timeout_seconds=args.timeout
+        )
+    # catch any exception that argparse throw
+    except SystemExit as e:
+        msg = f"\n*** For more information about valid inputs, "
+        msg += f"you should execute: ***\n"
+        msg += "`python main.py --help`"
+        print(msg)
+        
+    

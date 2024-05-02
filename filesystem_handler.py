@@ -68,7 +68,7 @@ class FilesystemHandler:
             Compress files and directories recursively.
 
         compress_with_error():
-            Handles compression errors and raises exceptions.   
+            Handles compression errors and return exceptions.   
 
         should_stop() -> bool:
             Check if the compression or decompression process should stop.
@@ -299,7 +299,7 @@ class FilesystemHandler:
         return True
 
     def compress_with_error(
-            self, should_remove_output: bool, exception_type: Exception) -> None:
+            self, should_remove_output: bool, exception_type: Exception) -> str:
         """
         Handles compression errors and raises exceptions.
 
@@ -313,25 +313,19 @@ class FilesystemHandler:
         - full_dir_path (str): The full directory path related to the 
         compression operation (default: '').
 
-        Raises:
-        InvalidDataForCompressionAlgorithem: If the compression operation 
-        fails.
-        Exception: If a specific exception type is provided and the 
-        operation fails.
+        Returns:
+            str: invalid data for compression exception.
 
         Notes:
         - If should_remove_output is True, the output file will be 
         removed if an error occurs.
-        - If aborted_msg is not provided, a default error message 
-        will be generated.
-        - If exception_type is provided, that specific exception will 
-        be raised; otherwise, a generic Exception will be raised.
+        - exception_type will be printed.
         """
         self.close_output_file()
         if should_remove_output and self._output_file:
             os.remove(self._output_file.name)
 
-        raise exception_type
+        return f"{type(exception_type).__name__}({exception_type})"
 
     def compress(
         self,
@@ -342,7 +336,7 @@ class FilesystemHandler:
         ignore_extensions: List[str] = [],
         init_compression: bool = False,
         remove_output: bool = True,
-    ) -> None:
+    ) -> Union[str, None]:
         """Compress files and directories recursively.
 
         Args:
@@ -358,6 +352,9 @@ class FilesystemHandler:
             compression operation. Defaults to False.
             remove_output (bool, optional): Whether an error occured,
             option to remove the output path. Defaults to True.
+
+        Returns:
+            str | None: exception as string or None
         """
         if init_compression:
             self.write_metadata()
@@ -379,13 +376,16 @@ class FilesystemHandler:
                             data=full_dir_path.encode())
 
                     # compress recursive the files which inside the directory to current folder
-                    self.compress(
+                    invalid = self.compress(
                         directories=files_in_folder,
                         subfolder=full_dir_path,
                         ignore_files=ignore_files,
                         ignore_extensions=ignore_extensions,
                         ignore_folders=ignore_folders,
                     )
+
+                    if invalid:
+                        return invalid
 
             # if it is directory to file
             elif os.path.isfile(full_dir_path):
@@ -410,22 +410,24 @@ class FilesystemHandler:
                             # compress file data
                             self.compress_data_to_file(data=full_file_data)
                         except Exception:
-                            self.compress_with_error(
+                            return self.compress_with_error(
                             should_remove_output=remove_output,
                             exception_type=exception_type
                         )
                     else: 
-                        self.compress_with_error(
+                        return self.compress_with_error(
                             should_remove_output=remove_output,
                             exception_type=exception_type
                         ) 
 
             else:
                 aborted_msg = f"Error - {full_dir_path} does not exist."
-                self.compress_with_error(
+                return self.compress_with_error(
                     should_remove_output=remove_output, 
                     exception_type=MissingInputPath(aborted_msg),
                     )
+            
+        return None     
                 
     def get_invalid_data_exception(self, full_dir_path: str) -> Exception:
         """Returns invalid data for compression exception according
@@ -688,15 +690,11 @@ class FilesystemHandler:
         Parameters:
         - paths (List[str]): A list of file paths to be removed.
 
-        Raises:
-        - FileNotFoundError: If a specified path does not exist.
-        - PermissionError: If permission is denied to remove a file
-
         Notes:
-        - If a specified path does not exist, a FileNotFoundError is raised, 
+        - If a specified path does not exist, the removal process 
+        continues for other paths.
+        - If permission is denied to remove a file
         but the removal process continues for other paths.
-        - If permission is denied to remove a file, a PermissionError is 
-        raised, but the removal process continues for other paths.
         - If no exceptions occur during the removal process, a success 
         message is printed for each file removed.
         - If an exception occurs during the removal process, a message 

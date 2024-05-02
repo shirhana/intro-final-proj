@@ -119,17 +119,28 @@ class DisplayActionInfo:
         print(f"Time of {self._action_type}  --> {clr_txt}")
 
     def show_compress_info(
-        self, compression_algorithem: str, input_paths_size: int
-    ) -> None:
+        self, compression_algorithem: str, input_paths_size: int, 
+        result: Union[int, str, bool, Dict[str,str], None]
+    ) -> bool:
         """Display compression information.
 
         Args:
             compression_algorithem (str): The compression algorithm used.
             input_paths_size (int): Total size of input paths.
+            result: Union[str, None]: result of compression.
+
+        Returns:
+            bool: True if compression was successful, False otherwise.
 
         Prints information about the compression process, including
         compressed size, delta size, and compressed ratio if applicable.
         """
+        if isinstance(result, str) and result:
+            print(print_colored(
+                text=result,
+                color=self._clrs.red,
+            ))
+            return False
         print(
             print_colored(
                 f"Compress With {compression_algorithem} Algorithem Info:",
@@ -153,6 +164,7 @@ class DisplayActionInfo:
             print(f"Compressed Ratio: {ratio_color}")
         except ZeroDivisionError:
             pass
+        return True
 
     def show_remove_from_archive_info(self, 
             result: Union[int, str, bool, Dict[str,str], None]) -> bool:
@@ -228,9 +240,10 @@ class DisplayActionInfo:
         success = True
 
         if self._action_type == ActionTypes.COMPRESS.value:
-            self.show_compress_info(
+            success = self.show_compress_info(
                 compression_algorithem=compression_algorithem,
                 input_paths_size=input_paths_size,
+                result=result
             )
 
         elif self._action_type == ActionTypes.REMOVE_FROM_ARCHIVE.value:

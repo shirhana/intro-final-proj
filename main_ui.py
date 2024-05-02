@@ -272,16 +272,16 @@ def main() -> None:
 
                 if action_type == ActionTypes.COMPRESS.value:
                     filename, extension = os.path.splitext(file.filename)
-                    file.save(os.path.join(path, filename))
+                    file.save(os.path.join(path, file.filename))
                     output_path = f"{filename}-{compression_type}.bin"
                     try:
                         run(
-                            input_paths=[os.path.join(path, filename)],
+                            input_paths=[os.path.join(path, file.filename)],
                             output_path=output_path,
                             action_type=action_type,
                             compression_type=compression_type,
                         )
-                        os.remove(os.path.join(path, filename))
+                        os.remove(os.path.join(path, file.filename))
                     except Exception as e:
                         abort(403, e)
 
