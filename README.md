@@ -1,10 +1,6 @@
 ## My Final Project In INTRO Course
 <img src="static\images\compress_fly.jpg" width="170" height="170" />
 
-[Visit Github Repository :)](https://github.com/shirhana/intro-final-proj)
-
-```* was written in md format```
-
 ## Advanced Extensions
 
 **Folder Compression/Decompression containing multiple text files/folders recursively**
