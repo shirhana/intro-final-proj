@@ -1,0 +1,128 @@
+## My Final Project In INTRO Course
+<img src="static\images\compress_fly.jpg" width="170" height="170" />
+
+## Advanced Extensions
+
+**Folder Compression/Decompression containing multiple text files/folders recursively**
+
+It is implemented in a recursive manner. This means that the program can handle compressing and decompressing folders that contain subfolders and multiple text files, navigating through the directory structure recursively to process each file or subfolder efficiently. This recursive approach allows for a more comprehensive and robust compression/decompression functionality, accommodating complex folder structures without compromising performance or functionality.
+
+**Modular implementation of additional compression algorithms - Huffman and Lempel-Ziv codes**
+
+Before implementing the 3 compression algorithms, I tried to plan the architecture to be as modular as possible. My code is structured so that each of the compression algorithm classes implements the most basic functions for compression and decompression of data. This means that adding another compression algorithm from this point on requires me to implement just the basic algorithm, and all other extensions that the project allows will seamlessly integrate with that algorithm.
+
+**Adding documentation for all code using mkdocs**
+
+Using mkdocs, all the comments within my code are automatically generated onto the mkdocs site that displays all the documentation. Thanks to mkdocs, I have one central place where all my comments are saved - git!
+
+
+## Added Extra Extensions
+
+* Adding support for viewing archive contents
+
+* Updating existing files within an archive
+
+* Deleting files from an existing archive
+
+* Adding an option to ignore specific files/file-types/certain folders during compression
+
+* Building a graphical user interface for the compression program that allows easy selection of files for compression (using js, css from existing opensource)
+
+* Adding support for receiving a specific timeout for opening a compressed file
+
+* Project tests
+
+* Adding types annotations (except of main-ui.py/main.py/utils folder)
+
+
+## Usage
+
+`python main.py [--input_paths_list DIRECTORIES] [--output_path DIRECTORY] [--compression_type CompressionTypes] [--action_type ActionTypes] [--byte_size INT] [--ignore_files LIST] [--ignore_folders LIST] [--ignore_extensions LIST]`
+
+| Argument                            | Description                                                                                       |
+|-------------------------------------|---------------------------------------------------------------------------------------------------|  
+| --input_paths_list                  | input directories list [REQUIRED]                                                                 |  
+| --output_path                       | output directory path  [REQUIRED for compression Default='']                                      |
+| --compression_type                  | compression algorithem [Default=rle]                                                              |
+| --action_type                       | action to execute                                                                                 |
+| --byte_size                         | byte size (Relevant just for rle compression) [Default=2]                                         |
+| --ignore_files                      | option to ignore specific files while compression                                                 |
+| --ignore_folders                    | option to ignore specific folders while compression                                               |
+| --ignore_extensions                 | option to ignore specific extensions while compression                                            |
+| --timeout                           | option to configure timeout in seconds to decompress action compression [Default=300 (5 minutes)] |
+| -h, --help                          | Show help                                                                                         |
+
+## Examples
+
+**Compress assets folder into archive file called output.bin:**
+
+`python main.py --input_paths_list assets --output_path output.bin --action_type compress`
+
+**Compress with huffman algorithem:**
+
+`python main.py --input_paths_list assets --output_path output.bin --action_type compress --compression_type huffman`
+
+**Compress and ignore all files with 'png'/'txt' extension:**
+
+`python main.py --input_paths_list assets --output_path output.bin --action_type compress --ignore_extensions png txt`
+
+**Decompress archive file - output.bin:**
+
+`python main.py --input_paths_list output.bin --action_type decompress`
+
+**Decompress archive file - output.bin with specific timeout (in seconds):**
+
+`python main.py --input_paths_list output.bin --action_type decompress --timeout 5`
+
+**View files inside archive file - output.bin:**
+
+`python main.py --input_paths_list output.bin --action_type view-archive`
+
+**Add files into archive file - output.bin:**
+
+`python main.py --input_paths_list path/to/new/file --output_path output.bin --action_type update-archive`
+
+**Remove files from archive file - output.bin:**
+
+`python main.py --input_paths_list path/to/file/pre/delete --output_path output.bin --action_type remove-from-archive`
+
+**Update files from archive file - output.bin:**
+
+`python main.py --input_paths_list path/to/file/pre/upadte1 path/to/file/pre/upadte2 --output_path output.bin --action_type update-archive`
+
+
+## UI 
+
+**Setup CompressFly UI:**
+
+`python main_ui.py`
+
+and visit: `http://localhost:9090`
+<img src="assets\compressfly_ui.png" />
+
+##
+
+## DOCUMENTION
+
+**Setup Documention with mkdocs:**
+
+1) `python -m mkdocs build`
+2) `python -m mkdocs serve`
+
+and visit: `http://localhost:8000`
+<img src="assets\mkdocs_page.png" />
+
+##
+
+## Tests
+
+**Test this project just by running:**
+
+`python -m pytest`
+
+## ARCHITECTURE
+![ARCHITECTURE](assets/compression-architecture2.jpg)
+
+## Youtube Link
+
+[Explanation Video on YouTube](https://youtu.be/bQ3B09coek8)
